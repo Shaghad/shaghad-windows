@@ -1,0 +1,4 @@
+[
+  { "Kind": 0, "Version": "26.3.27", "Sha256": "15c2d007954ac53ba69b80ec91242786b3c0b71d52649165b4ca1d5cc96ef8f1", "RelativePath": "xray/xray.exe" },
+  { "Kind": 1, "Version": "1.14.3", "Sha256": "5c19bb3f8c12d4e85b3d47fe63123a7624b314b58dd7a8e32f51004f1c4d2faf", "RelativePath": "sing-box/sing-box.exe" }
+]

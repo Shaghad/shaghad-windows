@@ -1,5 +1,7 @@
 .tools/
 .research/
+cores/
+*.dpapi
 **/bin/
 **/obj/
 artifacts/

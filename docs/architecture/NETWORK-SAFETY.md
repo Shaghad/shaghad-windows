@@ -1,6 +1,6 @@
 # Network integration and smart selection design
 
-These are design requirements for the next milestone, not implemented network features.
+Phase 2 implements the core/proxy/subscription subset described in `D:/VPN-AJ/docs/development/DEVELOPMENT-REPORT.md`. Smart ranking, batch probes, TUN and advanced routing below remain future design requirements.
 
 ## Proxy ownership
 
@@ -8,7 +8,7 @@ Before applying WinINet settings, snapshot all affected values including absent 
 
 ## Core lifecycle and trust
 
-Resolve only pinned official release artifacts, validate expected hashes/signatures against a trusted manifest, and stage downloads before activation. Hashes fetched beside an untrusted artifact alone are insufficient provenance. Persist an atomic previous-version fallback. Use ProcessStartInfo.ArgumentList for VPN-AJ-managed commands, fixed config paths, no shell, and bounded stdout/stderr. Track only spawned process IDs/handles; add a Windows job object. Monitor unexpected exit, port readiness and an explicit protocol-aware HTTP probe separately. Shutdown is graceful first with a bounded kill of owned children only. No real engine is bundled yet.
+Phase 2 compares official executables against a compiled SHA-256 manifest before running `version`, and holds a read lock throughout activation. Installation is explicit; self-update/rollback is deferred. Version/config checks use ArgumentList, no shell and a ten-second deadline. Runtime children are created suspended, assigned to a kill-on-close Windows job, restricted to three inherited standard handles, then resumed. A ten-second readiness deadline checks PID ownership of a loopback listener and a SOCKS5 greeting. Shutdown sends CTRL_BREAK through a console helper, waits five seconds, then terminates only the owned job if needed. Raw output is drained with fixed buffers and discarded; sanitized lifecycle/stage events are retained. Internet verification is a separate explicit HTTPS request through the active proxy.
 
 ## Selection and probes
 
@@ -18,7 +18,7 @@ Exclude unavailable/stale candidates. Rank healthy candidates by smoothed proxy-
 
 ## Subscriptions and storage
 
-Use HTTPS, enforce response size/time limits, validate every redirect and disallow credential forwarding across origins. Decide local/private-network endpoint policy explicitly. Protect URL credentials and profiles using user-bound DPAPI; keep public metadata separate. Download/stage/parse/validate before SQLite transaction replacement. Failed updates retain the previous set. Quotas/expiration are nullable provider assertions, not inferred measurements. External conversion services are off by default. No automatic scheduling before explicit user preference.
+Phase 2 uses HTTPS, a 25-second deadline, three redirects and a two-megabyte decompressed body limit. Connections validate all resolved IPs, then dial a checked public IP while TLS verifies the original hostname; loopback/private/link-local/documentation/transition endpoints are rejected. No OS proxy, cookies, external converter, ambient credentials or forwarded authentication headers are used. Profiles and token-bearing URLs are stored together in a user-bound DPAPI file with private ACLs. Download/parse/validation precedes atomic encrypted-file replacement; failed updates retain the old snapshot and active share link. This bounded library does not require SQLite yet. Scheduling, quotas and auto-failover are deferred.
 
 ## TUN, routing and diagnostics
 

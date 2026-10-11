@@ -3,25 +3,36 @@
  <sys:String x:Key="Subscriptions">اشتراک‌ها</sys:String><sys:String x:Key="Routing">مسیریابی</sys:String>
  <sys:String x:Key="Statistics">آمار</sys:String><sys:String x:Key="Diagnostics">عیب‌یابی</sys:String>
  <sys:String x:Key="Settings">تنظیمات</sys:String><sys:String x:Key="Exit">خروج</sys:String>
- <sys:String x:Key="Disconnected">قطع اتصال</sys:String><sys:String x:Key="Connect">اتصال — در دسترس نیست</sys:String>
+ <sys:String x:Key="Disconnected">قطع اتصال</sys:String><sys:String x:Key="Connect">اجرای پروکسی</sys:String>
  <sys:String x:Key="Welcome">وضعیت اتصال شما، روشن و ساده.</sys:String>
- <sys:String x:Key="FoundationNotice">نسخه پایه توسعه · اجرای هسته در دسترس نیست. تنظیمات شبکه تغییر نمی‌کند.</sys:String>
+ <sys:String x:Key="ImportServer">افزودن سرور</sys:String>
+ <sys:String x:Key="DashboardSetupHint">برای شروع، سرور خود را اضافه کنید.</sys:String>
+ <sys:String x:Key="DashboardReadyHint">سرور انتخاب شده؛ هر زمان آماده‌اید، پروکسی را اجرا کنید.</sys:String>
+ <sys:String x:Key="DashboardStartingHint">در حال بررسی تنظیمات و اجرای هسته…</sys:String>
+ <sys:String x:Key="DashboardConnectedHint">پروکسی محلی آماده است. دسترسی اینترنت را با آزمون HTTPS بررسی کنید.</sys:String>
+ <sys:String x:Key="DashboardErrorHint">اجرای پروکسی ناموفق بود. جزئیات را در عیب‌یابی ببینید.</sys:String>
+ <sys:String x:Key="LocalEndpoint">پروکسی محلی</sys:String>
+ <sys:String x:Key="CoreEngine">موتور ارتباط</sys:String>
+ <sys:String x:Key="ProxyStopped">متوقف</sys:String>
+ <sys:String x:Key="InternetUnverified">دسترسی اینترنت تأیید نشده</sys:String>
+ <sys:String x:Key="InternetVerified">دسترسی HTTPS تأیید شد</sys:String>
+ <sys:String x:Key="FoundationNotice">فاز ۲ · پروکسی محلی · تغییر پروکسی ویندوز با تأیید شما · بدون TUN</sys:String>
  <sys:String x:Key="SelectedServer">سرور انتخاب‌شده</sys:String><sys:String x:Key="NoServer">سروری انتخاب نشده است</sys:String>
- <sys:String x:Key="NoMetrics">آمار شبکه پس از فعال شدن هسته واقعی و منبع ترافیک در دسترس خواهد بود.</sys:String>
- <sys:String x:Key="CoreNotice">اعتبارسنجی در صفحه سرورها فعال است. اتصال به هسته تأییدشده و مدیریت امن چرخه اجرا نیاز دارد.</sys:String>
- <sys:String x:Key="Preview">اعتبارسنجی پیکربندی سرور</sys:String><sys:String x:Key="Validate">اعتبارسنجی</sys:String>
- <sys:String x:Key="PreviewNotice">فقط پیش‌نمایش. کادر ورودی پاک می‌شود و اطلاعات ذخیره نمی‌شود؛ رشته‌ها تا جمع‌آوری حافظه در رم باقی می‌مانند.</sys:String>
- <sys:String x:Key="EmptySubscriptions">اشتراکی وجود ندارد. ذخیره امن اطلاعات و به‌روزرسانی تراکنشی هنوز پیاده‌سازی نشده است.</sys:String>
+ <sys:String x:Key="NoMetrics">نشانی عمومی و شمارنده ترافیک در این فاز جمع‌آوری نمی‌شود. تأخیر با درخواست واقعی HTTPS از پروکسی فعال سنجیده می‌شود.</sys:String>
+ <sys:String x:Key="CoreNotice">پروکسی محلی HTTP / SOCKS5 · بدون TUN</sys:String>
+ <sys:String x:Key="Preview">واردکردن سرورها</sys:String><sys:String x:Key="Validate">بررسی و ذخیره</sys:String>
+ <sys:String x:Key="PreviewNotice">پیوندهای VLESS، VMess، Trojan و Shadowsocks؛ هرکدام در یک خط. اطلاعات برای کاربر فعلی ویندوز رمزگذاری می‌شود. کادر ورودی پس از عملیات پاک می‌شود.</sys:String>
+ <sys:String x:Key="EmptySubscriptions">اشتراک HTTPS به‌صورت رمزگذاری‌شده ذخیره می‌شود. خطای به‌روزرسانی سرورهای قبلی را حفظ می‌کند. نشانی‌های شبکه خصوصی پذیرفته نمی‌شوند.</sys:String>
  <sys:String x:Key="AddUnavailable">افزودن اشتراک — در دسترس نیست</sys:String>
- <sys:String x:Key="RoutingUnavailable">مسیریابی تا پیاده‌سازی اعتبارسنجی قابلیت‌های هسته در دسترس نیست.</sys:String>
+ <sys:String x:Key="RoutingUnavailable">تمام ترافیک پروکسی محلی از سرور انتخاب‌شده عبور می‌کند. مسیریابی پیشرفته و TUN خارج از محدوده فاز ۲ است.</sys:String>
  <sys:String x:Key="RunChecks">بررسی محلی</sys:String><sys:String x:Key="Theme">ظاهر</sys:String>
  <sys:String x:Key="Language">زبان</sys:String><sys:String x:Key="Save">ذخیره تنظیمات</sys:String>
- <sys:String x:Key="CloseNotice">بستن پنجره باعث خروج از شغاد و حذف نماد سینی می‌شود. شروع خودکار، TUN و پروکسی سیستم در دسترس نیست.</sys:String>
+ <sys:String x:Key="CloseNotice">هنگام خروج، تغییرات تأییدشده پروکسی بازگردانی و هسته متعلق به شغاد متوقف می‌شود. پس از خروج ناگهانی، بازیابی را در تنظیمات بررسی کنید.</sys:String>
  <sys:String x:Key="About">درباره شغاد</sys:String>
  <sys:String x:Key="ProductDescription">کارخواه مدرن ارتباط امن</sys:String>
- <sys:String x:Key="DevelopmentBuild">نسخه توسعه · ۰٫۱</sys:String>
+ <sys:String x:Key="DevelopmentBuild">نسخه توسعه · ۰٫۲</sys:String>
  <sys:String x:Key="ConnectionStatus">وضعیت اتصال</sys:String>
- <sys:String x:Key="Connecting">در حال اتصال</sys:String><sys:String x:Key="Connected">متصل</sys:String>
+ <sys:String x:Key="Connecting">در حال اجرای هسته</sys:String><sys:String x:Key="Connected">پروکسی محلی آماده</sys:String>
  <sys:String x:Key="Disconnecting">در حال قطع اتصال</sys:String><sys:String x:Key="ConnectionError">خطای اتصال</sys:String>
  <sys:String x:Key="ConnectionModeUnavailable">حالت اتصال · در دسترس نیست</sys:String>
  <sys:String x:Key="ChangeServer">تغییر سرور</sys:String>
@@ -31,7 +42,12 @@
  <sys:String x:Key="AppearanceTitle">ظاهر دلخواه شغاد</sys:String>
  <sys:String x:Key="ApplicationVersion">نسخه برنامه</sys:String>
  <sys:String x:Key="CoreVersion">نسخه هسته</sys:String>
- <sys:String x:Key="CoreNotInstalled">نصب نشده · اجرای هسته در دسترس نیست</sys:String>
+ <sys:String x:Key="CoreNotInstalled">بررسی نشده</sys:String>
+ <sys:String x:Key="Disconnect">توقف / لغو</sys:String><sys:String x:Key="TestProxy">آزمون HTTPS و تأخیر</sys:String>
+ <sys:String x:Key="ClipboardImport">ورود از کلیپ‌بورد</sys:String><sys:String x:Key="SelectServer">انتخاب سرور</sys:String><sys:String x:Key="Remove">حذف انتخاب‌شده</sys:String>
+ <sys:String x:Key="SubscriptionName">نام اشتراک</sys:String><sys:String x:Key="AddSubscription">ذخیره اشتراک</sys:String><sys:String x:Key="UpdateSubscription">به‌روزرسانی انتخاب‌شده</sys:String>
+ <sys:String x:Key="SystemProxyTitle">پروکسی سیستم ویندوز</sys:String><sys:String x:Key="SystemProxyNotice">اعمال نیازمند تأیید شماست. تنظیمات قبلی دستی، PAC و تشخیص خودکار برای بازیابی رمزگذاری می‌شود. تغییرات برنامه‌های دیگر حفظ می‌شود.</sys:String>
+ <sys:String x:Key="ApplyProxy">اعمال با تأیید</sys:String><sys:String x:Key="RestoreProxy">بازگردانی / بازیابی</sys:String><sys:String x:Key="CheckCores">بررسی هسته‌های نصب‌شده</sys:String>
  <sys:String x:Key="GitHubRepository">مخزن گیت‌هاب</sys:String>
  <sys:String x:Key="OpenLicenses">مجوزهای متن‌باز</sys:String>
  <sys:String x:Key="Attribution">شغاد برنامه‌ای مستقل است و از کتابخانه v2rayN ServiceLib نسخه ۷٫۲۵٫۴، اثر 2dust و همکاران، با مجوز GPL v3 استفاده می‌کند. این محصول رسمی v2rayN یا Hiddify نیست و ضمانتی ندارد. قلم وزیرمتن متعلق به نویسندگان پروژه Vazirmatn با مجوز SIL OFL 1.1 است. اطلاعات مجوز وابستگی‌ها همراه خروجی توسعه ارائه می‌شود.</sys:String>

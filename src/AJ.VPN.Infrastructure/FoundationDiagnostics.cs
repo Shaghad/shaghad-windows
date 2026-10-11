@@ -3,18 +3,23 @@ using AJ.VPN.Domain;
 
 namespace AJ.VPN.Infrastructure;
 
-public sealed class FoundationDiagnostics(ICoreBackend backend) : IDiagnosticsService
+public sealed class FoundationDiagnostics(ICoreCatalog catalog, ILocalProxyBackend backend) : IDiagnosticsService
 {
-    public Task<IReadOnlyList<DiagnosticResult>> CheckAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DiagnosticResult>> CheckAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        IReadOnlyList<DiagnosticResult> results =
+        List<DiagnosticResult> results =
         [
             new("Info", $"Runtime: {Environment.Version}; Windows: {OperatingSystem.IsWindows()}", "Local runtime information", "Use the supported Windows deployment matrix."),
-            new(backend.IsAvailable ? "Ready" : "Unavailable", "Core execution is not enabled in the foundation.", "Binary trust and isolated lifecycle are not validated.", "Complete core integration before connecting."),
-            new("Not tested", "Internet, DNS, local proxy port and public IP have not been probed.", "No active core or user-selected probe.", "Run explicit connectivity diagnostics after core activation."),
-            new("Unchanged", "VPN-AJ has not changed System Proxy, DNS, routes or adapters.", "Networking features are unavailable.", "No cleanup action is required for this build.")
+            new(backend.Port != null ? "Local proxy ready" : "Stopped", backend.Port is int port ? $"Loopback listener: 127.0.0.1:{port}" : "No active local proxy listener.", "Internet verification is a separate explicit HTTPS probe.", "Import a valid server, connect, then test HTTPS through the proxy."),
+            new("Manual control", "System Proxy requires explicit approval. TUN, system DNS and routes are not managed.", "A recovery journal protects approved proxy changes.", "Use Settings to apply or recover Windows proxy settings.")
         ];
-        return Task.FromResult(results);
+        foreach (var kind in Enum.GetValues<CoreKind>())
+        {
+            try { var core = await catalog.FindAsync(kind, cancellationToken); results.Add(new("Verified", $"{kind} {core.Version}: executable hash and version match.", "Pinned official Windows x64 release.", "Native configuration validation runs before every connection.")); }
+            catch (OperationCanceledException) { throw; }
+            catch { results.Add(new("Unavailable", $"{kind}: executable missing, untrusted or unable to initialize.", "A pinned executable is required.", "Run scripts/install-cores.ps1 -Download and rebuild or publish.")); }
+        }
+        return results;
     }
 }

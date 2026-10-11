@@ -23,15 +23,26 @@ public partial class App : System.Windows.Application
     private ServiceProvider? services;
     private ApplicationSettings appearance = new();
     private TrayIntegration? tray;
+    private FileStream? instanceLock;
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (e.Args.Length == 3 && e.Args[0] == "--production-connectivity-test")
+        { try { await ProductionConnectivityTest.RunAsync(Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2])); Shutdown(0); } catch { Shutdown(1); } return; }
+        if (e.Args.Length == 2 && e.Args[0] == "--signal-core" && int.TryParse(e.Args[1], out var pid))
+        { Shutdown(OwnedCoreProcess.SignalConsoleGroup(pid) ? 0 : 1); return; }
+        if (e.Args.Length == 2 && e.Args[0] == "--core-self-test")
+        { try { await CoreSelfTest.RunAsync(Path.GetFullPath(e.Args[1])); Shutdown(0); } catch { Shutdown(1); } return; }
         var smoke = e.Args.Length == 2 && e.Args[0] == "--smoke-test";
         try { await InitializeAsync(e, smoke); }
-        catch (Exception ex) when (smoke)
+        catch (Exception ex)
         {
-            Directory.CreateDirectory(Path.GetFullPath(e.Args[1]));
-            File.WriteAllText(Path.Combine(e.Args[1], "failure.txt"), ex.ToString());
+            if (smoke)
+            {
+                Directory.CreateDirectory(Path.GetFullPath(e.Args[1]));
+                File.WriteAllText(Path.Combine(e.Args[1], "failure.txt"), ex.ToString());
+            }
+            else MessageBox.Show("SHAGHAD could not initialize. Another instance may be using this Windows user's data, or private storage may be unavailable. Existing data was preserved.", "SHAGHAD", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
@@ -39,11 +50,24 @@ public partial class App : System.Windows.Application
     {
         var data = smoke ? Path.Combine(Path.GetFullPath(e.Args[1]), "preferences")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VPN-AJ");
+        ProtectedFiles.CreatePrivateDirectory(data);
+        instanceLock = new FileStream(Path.Combine(data, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        LocalProxyBackend.CleanupAbandonedSessions(data);
+        var coreDirectory = Path.Combine(AppContext.BaseDirectory, "cores");
         services = new ServiceCollection()
             .AddLogging(builder => builder.AddProvider(new SafeFileLoggerProvider(Path.Combine(data, "logs"))))
             .AddSingleton<ISettingsService>(new JsonSettingsService(data))
             .AddSingleton<IProfileValidator, ServiceLibProfileValidator>()
-            .AddSingleton<ICoreBackend, UnavailableCoreBackend>()
+            .AddSingleton<ILibraryStore>(new EncryptedLibraryStore(data))
+            .AddSingleton<ISubscriptionDownloader, SubscriptionDownloader>()
+            .AddSingleton<LibraryService>()
+            .AddSingleton<ICoreConfigurationGenerator, ServiceLibConfigurationGenerator>()
+            .AddSingleton<ICoreCatalog>(new TrustedCoreCatalog(coreDirectory))
+            .AddSingleton<LocalProxyBackend>(sp => new(sp.GetRequiredService<LibraryService>(), sp.GetRequiredService<ICoreCatalog>(), sp.GetRequiredService<ICoreConfigurationGenerator>(), data,
+                Path.Combine(AppContext.BaseDirectory, "Shaghad.exe"), sp.GetRequiredService<ILogger<LocalProxyBackend>>()))
+            .AddSingleton<ILocalProxyBackend>(sp => sp.GetRequiredService<LocalProxyBackend>())
+            .AddSingleton<ICoreBackend>(sp => sp.GetRequiredService<LocalProxyBackend>())
+            .AddSingleton<SystemProxyService>(new SystemProxyService(new WindowsProxySettingsBackend(), new EncryptedProxyJournalStore(data)))
             .AddSingleton<ConnectionService>()
             .AddSingleton<IDiagnosticsService, FoundationDiagnostics>()
             .AddSingleton<ShellViewModel>()
@@ -55,7 +79,6 @@ public partial class App : System.Windows.Application
         vm.AppearanceChanged += (_, settings) => ApplyAppearance(settings);
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         MainWindow = services.GetRequiredService<MainWindow>();
-        MainWindow.FlowDirection = vm.Settings.Language == "fa" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         if (smoke)
         {
             await SmokeTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
@@ -77,13 +100,20 @@ public partial class App : System.Windows.Application
         var persianFont = new FontFamily(new Uri("pack://application:,,,/"), "./Assets/Fonts/#Vazirmatn");
         Resources["PersianFont"] = persianFont;
         Resources["UiFont"] = settings.Language == "fa" ? persianFont : new FontFamily("Segoe UI");
-        if (MainWindow != null) MainWindow.FlowDirection = settings.Language == "fa" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        // Language affects text islands only. Window/chrome and structural panels always stay LTR.
+        Resources["ContentFlowDirection"] = settings.Language == "fa" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        // TextBlock's native RTL coordinate system maps its leading (Left) paragraph edge
+        // to the physical right. Explicit Right here double-reverses alignment in an LTR shell.
+        Resources["ContentTextAlignment"] = TextAlignment.Left;
+        Resources["ContentAlignment"] = settings.Language == "fa" ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+        (MainWindow?.DataContext as ShellViewModel)?.RefreshLocalizedText();
     }
     protected override void OnExit(ExitEventArgs e)
     {
         SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
         tray?.Dispose();
         services?.Dispose();
+        instanceLock?.Dispose();
         base.OnExit(e);
     }
     private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e) => Dispatcher.InvokeAsync(ApplyTheme);

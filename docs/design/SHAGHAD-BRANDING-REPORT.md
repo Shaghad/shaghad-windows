@@ -34,7 +34,7 @@ Measured examples: navy/turquoise **8.85:1**, gray/slate **5.71:1**, deep teal/w
 
 Windows Segoe UI for English; unmodified **Vazirmatn v33.003** Regular/SemiBold for Persian, bundled as WPF resources. OFL copyright/license and AUTHORS retained at `D:\VPN-AJ\branding\fonts\OFL.txt` and `AUTHORS.txt`, and copied into published legal notices. No system font installation or Segoe UI redistribution. Exact font hashes and official sources: `D:\VPN-AJ\docs\design\BRAND-IDENTITY.md`.
 
-Persian RTL moves navigation to the right. Logos, URLs, versions, profile URIs and numerical fields retain LTR orientation. The SVG wordmark is original path lettering and requires no installed font.
+The original branding milestone mirrored navigation in Persian; that behavior was corrected by the subsequent RTL/window redesign. The shell and native caption now remain LTR, while Persian text alone uses RTL. Logos, URLs, versions, profile URIs and numerical fields retain LTR orientation. The SVG wordmark is original path lettering and requires no installed font. Current validation is in `D:/VPN-AJ/docs/design/UI-REDESIGN-REPORT.md`.
 
 ## 6. Generated Assets
 

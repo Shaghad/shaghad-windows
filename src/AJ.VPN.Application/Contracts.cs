@@ -21,3 +21,27 @@ public interface ICoreBackend
     Task<CoreReadiness> StartAsync(Server server, CancellationToken cancellationToken);
     Task StopAsync(CancellationToken cancellationToken);
 }
+public interface ILibraryStore
+{
+    Task<ProfileLibrary> LoadAsync(CancellationToken cancellationToken = default);
+    Task SaveAsync(ProfileLibrary library, CancellationToken cancellationToken = default);
+}
+public interface ICoreConfigurationGenerator
+{
+    string Generate(SavedProfile profile, CoreKind kind, int port);
+}
+public interface ICoreCatalog
+{
+    Task<CoreInstallation> FindAsync(CoreKind kind, CancellationToken cancellationToken = default);
+}
+public interface ILocalProxyBackend : ICoreBackend
+{
+    int? Port { get; }
+    string Version { get; }
+    event EventHandler? UnexpectedExit;
+    Task<ProxyProbe> ProbeAsync(CancellationToken cancellationToken = default);
+}
+public interface ISubscriptionDownloader
+{
+    Task<string> DownloadAsync(string url, CancellationToken cancellationToken = default);
+}

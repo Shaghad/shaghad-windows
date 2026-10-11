@@ -1,5 +1,8 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -14,8 +17,10 @@ internal static class SmokeTest
     public static async Task RunAsync(Window window, ShellViewModel vm, string output, Action<ApplicationSettings> appearance)
     {
         Directory.CreateDirectory(output);
+        foreach (var file in new[] { "failure.txt", "result.txt", "layout-results.json" }) File.Delete(Path.Combine(output, file));
         window.Width = 1200;
-        window.Height = 860;
+        window.Height = 760;
+        window.Show();
         if (window.Title != "SHAGHAD" || window.Icon == null || window.Icon.Width < 16)
             throw new InvalidOperationException("Window branding or ICO loading failed.");
         using var tray = new TrayIntegration(window, vm, visible: false);
@@ -45,16 +50,131 @@ internal static class SmokeTest
         Render(licenses, Path.Combine(output, "Licenses.png"));
         licenses.Close();
         tray.CheckMenuCallbacks();
+        await CheckLayoutMatrixAsync(window, vm, output, appearance);
         window.Hide();
-        File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: SHAGHAD startup/DI; eight pages; dark and Persian RTL; embedded Vazirmatn; all seven WPF ICO frames; tray ICO decode and actual About callback; GPL/OFL viewer. Native tray visibility and taskbar interaction require live verification. No network or saved-preference mutation.\n");
+        File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: SHAGHAD startup/DI; eight pages; embedded Vazirmatn; seven ICO frames; tray About callback; GPL/OFL viewer. 32 shown-window layout checks: four sizes x two languages x two themes x Dashboard/About. LTR shell/native chrome, RTL text islands, LTR technical values, fixed sidebar/card positions, no page overflow or clipped text; long-page scrolling remains functional. Native dragging, snapping and caption interaction require separate interactive verification. No network or saved-preference mutation.\n");
+    }
+    private static async Task CheckLayoutMatrixAsync(Window window, ShellViewModel vm, string output, Action<ApplicationSettings> appearance)
+    {
+        var rows = new List<object>();
+        var shell = (FrameworkElement)window.FindName("ApplicationShell");
+        var sidebar = (FrameworkElement)window.FindName("Sidebar");
+        var host = (FrameworkElement)window.FindName("ContentHost");
+        var viewer = (ScrollViewer)window.FindName("PageScrollViewer");
+        foreach (var size in new[] { new Size(1024, 540), new Size(1280, 720), new Size(1366, 768), new Size(1920, 1080) })
+        foreach (var theme in new[] { ThemePreference.Light, ThemePreference.Dark })
+        {
+            Dictionary<string, Point>? englishPositions = null;
+            foreach (var language in new[] { "en", "fa" })
+            {
+                appearance(new(1, theme, language));
+                window.Width = size.Width; window.Height = size.Height;
+                foreach (var page in new[] { "Dashboard", "About" })
+                {
+                    vm.CurrentPage = page;
+                    viewer.ScrollToTop();
+                    await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+                    var filename = $"layout-{(int)size.Width}x{(int)size.Height}-{language}-{theme}-{page}.png";
+                    Render(window, Path.Combine(output, filename));
+                    if (window.FlowDirection != FlowDirection.LeftToRight || shell.FlowDirection != FlowDirection.LeftToRight
+                        || window.WindowStyle != WindowStyle.SingleBorderWindow || window.ResizeMode != ResizeMode.CanResize)
+                        throw new InvalidOperationException("Native window/shell direction or chrome changed.");
+                    var handle = new WindowInteropHelper(window).Handle;
+                    var nativeStyle = (long)GetWindowLongPtr(handle, -16);
+                    const long captionControls = 0x80000 | 0x40000 | 0x20000 | 0x10000;
+                    if (handle == IntPtr.Zero || ((long)GetWindowLongPtr(handle, -20) & 0x00400000) != 0
+                        || (nativeStyle & captionControls) != captionControls)
+                        throw new InvalidOperationException("Native RTL chrome or standard resizing/caption controls regressed.");
+                    var sidebarPoint = sidebar.TranslatePoint(new Point(), shell);
+                    var contentPoint = host.TranslatePoint(new Point(), shell);
+                    if (sidebarPoint.X > 1 || contentPoint.X < sidebar.ActualWidth || sidebar.FlowDirection != FlowDirection.LeftToRight)
+                        throw new InvalidOperationException("Sidebar moved or content columns mirrored.");
+                    var navigationBounds = Descendants(sidebar).OfType<Control>().Where(c => c is RadioButton or Button && c.IsVisible)
+                        .Select(c => c.TransformToAncestor(sidebar).TransformBounds(new Rect(c.RenderSize))).OrderBy(r => r.Top).ToArray();
+                    for (var i = 0; i < navigationBounds.Length; i++)
+                        if (navigationBounds[i].Top < -1 || navigationBounds[i].Bottom > sidebar.ActualHeight + 1
+                            || (i > 0 && navigationBounds[i - 1].Bottom > navigationBounds[i].Top + 1))
+                            throw new InvalidOperationException("Sidebar navigation is clipped or overlaps.");
+                    if (Math.Abs(window.ActualWidth - size.Width) > 1 || Math.Abs(window.ActualHeight - size.Height) > 1)
+                        throw new InvalidOperationException("Requested running-window size was not applied.");
+                    if (viewer.ScrollableHeight > 1 || viewer.ComputedVerticalScrollBarVisibility == Visibility.Visible)
+                        throw new InvalidOperationException($"Unexpected {page} scrolling: {language} {theme} {size}, extent={viewer.ExtentHeight}, viewport={viewer.ViewportHeight}.");
+                    var panel = (FrameworkElement)window.FindName(page + "Page");
+                    foreach (var text in Descendants(panel).OfType<TextBlock>().Where(t => t.IsVisible))
+                    {
+                        var bounds = text.TransformToAncestor(viewer).TransformBounds(new Rect(text.RenderSize));
+                        if (bounds.Left < -1 || bounds.Top < -1 || bounds.Right > viewer.ActualWidth + 1 || bounds.Bottom > viewer.ActualHeight + 1
+                            || text.DesiredSize.Height - text.Margin.Top - text.Margin.Bottom > text.ActualHeight + 1)
+                            throw new InvalidOperationException($"Clipped {page} text at {language} {size}: {text.Name} / {text.Text}; bounds={bounds}, viewer={viewer.RenderSize}, desired={text.DesiredSize}, actual={text.RenderSize}");
+                    }
+                    var attribution = (TextBlock)window.FindName("AttributionText");
+                    if (attribution.FlowDirection != (language == "fa" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight)
+                        || attribution.TextAlignment != TextAlignment.Left)
+                        throw new InvalidOperationException("Localized paragraphs have the wrong direction/alignment.");
+                    foreach (var name in new[] { "TechnicalEndpoint", "CoreEngineValue", "LatencyValue", "ApplicationVersionValue", "CoreVersionValue", "ProfileUriInput", "SubscriptionUrlInput" })
+                        if (((FrameworkElement)window.FindName(name)).FlowDirection != FlowDirection.LeftToRight)
+                            throw new InvalidOperationException("Technical value inherited RTL.");
+                    if (((TextBox)window.FindName("SubscriptionNameInput")).FlowDirection != attribution.FlowDirection)
+                        throw new InvalidOperationException("Human-language form input has the wrong direction.");
+                    if (page == "Dashboard")
+                    {
+                        var positions = new[] { "ConnectionCard", "SelectedServerCard", "ConnectionDetails" }.ToDictionary(name => name,
+                            name => ((FrameworkElement)window.FindName(name)).TranslatePoint(new Point(), viewer));
+                        if (language == "en") englishPositions = positions;
+                        else foreach (var (name, point) in positions)
+                            if (englishPositions == null || Math.Abs(point.X - englishPositions[name].X) > 1 || Math.Abs(point.Y - englishPositions[name].Y) > 1)
+                                throw new InvalidOperationException($"Dashboard {name} moved after language switching.");
+                        var cards = positions.Keys.Select(name => (FrameworkElement)window.FindName(name))
+                            .Select(c => c.TransformToAncestor(viewer).TransformBounds(new Rect(c.RenderSize))).OrderBy(r => r.Top).ToArray();
+                        for (var i = 1; i < cards.Length; i++)
+                            if (cards[i - 1].Bottom > cards[i].Top + 1) throw new InvalidOperationException("Dashboard cards overlap.");
+                    }
+                    rows.Add(new { Width = window.ActualWidth, Height = window.ActualHeight, Language = language, Theme = theme.ToString(), Page = page,
+                        ShellDirection = shell.FlowDirection.ToString(), SidebarX = sidebarPoint.X, ContentX = contentPoint.X,
+                        ScrollableHeight = viewer.ScrollableHeight, ClientWidth = shell.ActualWidth, ClientHeight = shell.ActualHeight, Passed = true });
+                }
+            }
+        }
+        // Long content must remain reachable, with a visible themed scrollbar when it overflows.
+        window.Width = 1024; window.Height = 540; vm.CurrentPage = "Settings";
+        await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        if (viewer.ScrollableHeight <= 0 || viewer.ComputedVerticalScrollBarVisibility != Visibility.Visible)
+            throw new InvalidOperationException("Long page lost its visible scrollbar.");
+        viewer.ScrollToBottom();
+        await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        if (viewer.VerticalOffset <= 0) throw new InvalidOperationException("Long page cannot scroll.");
+        vm.CurrentPage = "Dashboard";
+        await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        var action = (Button)window.FindName("DashboardAction");
+        if (!vm.HasActiveProfile)
+        {
+            if (action.Command != vm.NavigateCommand || action.CommandParameter as string != "Servers")
+                throw new InvalidOperationException("Empty dashboard tries to start a core instead of importing a server.");
+            action.Command.Execute(action.CommandParameter);
+            if (vm.CurrentPage != "Servers") throw new InvalidOperationException("Dashboard add-server action failed.");
+        }
+        File.WriteAllText(Path.Combine(output, "layout-results.json"), System.Text.Json.JsonSerializer.Serialize(rows, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+    }
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern nint GetWindowLongPtr(nint window, int index);
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            yield return child;
+            foreach (var nested in Descendants(child)) yield return nested;
+        }
     }
     private static void Render(Window window, string path)
     {
         var content = (FrameworkElement)window.Content;
-        content.Measure(new Size(1200, 820));
-        content.Arrange(new Rect(0, 0, 1200, 820));
+        var width = content.ActualWidth > 0 ? content.ActualWidth : window.Width;
+        var height = content.ActualHeight > 0 ? content.ActualHeight : window.Height - 40;
+        content.Measure(new Size(width, height));
+        content.Arrange(new Rect(0, 0, width, height));
         content.UpdateLayout();
-        var image = new RenderTargetBitmap(1200, 820, 96, 96, PixelFormats.Pbgra32);
+        var image = new RenderTargetBitmap((int)Math.Ceiling(width), (int)Math.Ceiling(height), 96, 96, PixelFormats.Pbgra32);
         image.Render(content);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(image));

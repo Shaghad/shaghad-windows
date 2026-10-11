@@ -13,6 +13,7 @@ internal sealed class TrayIntegration : IDisposable
     private readonly Icon icon;
     private readonly Window window;
     private readonly ShellViewModel viewModel;
+    private bool disposed;
     public TrayIntegration(Window window, ShellViewModel viewModel, bool visible = true)
     {
         this.window = window;
@@ -24,7 +25,7 @@ internal sealed class TrayIntegration : IDisposable
         menu.Items.Add("Open SHAGHAD", null, (_, _) => Open());
         menu.Items.Add("About SHAGHAD | درباره شغاد", null, (_, _) => Open("About"));
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Exit SHAGHAD", null, (_, _) => window.Dispatcher.Invoke(() => System.Windows.Application.Current.Shutdown()));
+        menu.Items.Add("Exit SHAGHAD", null, (_, _) => window.Dispatcher.Invoke(window.Close));
         notifyIcon = new Forms.NotifyIcon
         {
             Icon = icon,
@@ -32,8 +33,19 @@ internal sealed class TrayIntegration : IDisposable
             ContextMenuStrip = menu,
             Visible = visible
         };
-        menu.Opening += (_, _) => notifyIcon.Text = $"SHAGHAD · {viewModel.State}";
+        menu.Opening += (_, _) => RefreshTooltip();
+        viewModel.PropertyChanged += OnStateChanged;
+        RefreshTooltip();
         notifyIcon.DoubleClick += (_, _) => Open();
+    }
+    private void OnStateChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(ShellViewModel.State)) window.Dispatcher.InvokeAsync(RefreshTooltip);
+    }
+    private void RefreshTooltip()
+    {
+        if (disposed) return;
+        notifyIcon.Text = "SHAGHAD · " + (viewModel.State == AJ.VPN.Domain.ConnectionState.Connected ? "Local proxy ready" : viewModel.State.ToString());
     }
     private void Open(string? page = null) => window.Dispatcher.Invoke(() =>
     {
@@ -51,6 +63,8 @@ internal sealed class TrayIntegration : IDisposable
     }
     public void Dispose()
     {
+        disposed = true;
+        viewModel.PropertyChanged -= OnStateChanged;
         notifyIcon.Visible = false;
         notifyIcon.Dispose();
         menu.Dispose();

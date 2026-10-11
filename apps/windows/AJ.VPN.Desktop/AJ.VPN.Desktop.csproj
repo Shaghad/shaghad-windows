@@ -18,11 +18,12 @@
     <AssemblyTitle>SHAGHAD</AssemblyTitle>
     <Product>SHAGHAD</Product>
     <Description>Modern Secure Network Client</Description>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <ApplicationIcon>..\..\..\branding\icons\shaghad.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\..\..\cores\**\*" Link="cores\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
     <Resource Include="..\..\..\branding\icons\shaghad.ico" Link="Assets/shaghad.ico" />

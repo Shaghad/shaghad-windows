@@ -3,25 +3,36 @@
  <sys:String x:Key="Subscriptions">Subscriptions</sys:String><sys:String x:Key="Routing">Routing</sys:String>
  <sys:String x:Key="Statistics">Statistics</sys:String><sys:String x:Key="Diagnostics">Diagnostics</sys:String>
  <sys:String x:Key="Settings">Settings</sys:String><sys:String x:Key="Exit">Exit</sys:String>
- <sys:String x:Key="Disconnected">Disconnected</sys:String><sys:String x:Key="Connect">Connect — unavailable</sys:String>
+ <sys:String x:Key="Disconnected">Disconnected</sys:String><sys:String x:Key="Connect">Start proxy</sys:String>
  <sys:String x:Key="Welcome">Your connection, clearly in view.</sys:String>
- <sys:String x:Key="FoundationNotice">Development foundation · Core execution is unavailable. No network settings are changed.</sys:String>
+ <sys:String x:Key="ImportServer">Add a server</sys:String>
+ <sys:String x:Key="DashboardSetupHint">Add your server to get started.</sys:String>
+ <sys:String x:Key="DashboardReadyHint">Your server is selected. Start when you’re ready.</sys:String>
+ <sys:String x:Key="DashboardStartingHint">Validating the configuration and starting your core…</sys:String>
+ <sys:String x:Key="DashboardConnectedHint">Local proxy ready. Test HTTPS access to verify your connection.</sys:String>
+ <sys:String x:Key="DashboardErrorHint">The proxy could not start. Diagnostics has more detail.</sys:String>
+ <sys:String x:Key="LocalEndpoint">Local proxy</sys:String>
+ <sys:String x:Key="CoreEngine">Core engine</sys:String>
+ <sys:String x:Key="ProxyStopped">Stopped</sys:String>
+ <sys:String x:Key="InternetUnverified">Internet access not verified</sys:String>
+ <sys:String x:Key="InternetVerified">HTTPS access verified</sys:String>
+ <sys:String x:Key="FoundationNotice">Phase 2 · Local proxy mode · Windows proxy changes require your approval · TUN unavailable</sys:String>
  <sys:String x:Key="SelectedServer">Selected server</sys:String><sys:String x:Key="NoServer">No server selected</sys:String>
- <sys:String x:Key="NoMetrics">Network statistics are unavailable until a real core and traffic source are active.</sys:String>
- <sys:String x:Key="CoreNotice">Import validation is available on Servers. Connecting requires a verified core and safe lifecycle integration.</sys:String>
- <sys:String x:Key="Preview">Validate a server profile</sys:String><sys:String x:Key="Validate">Validate profile</sys:String>
- <sys:String x:Key="PreviewNotice">Preview only. The input field is cleared after validation. Credentials are not saved; managed strings remain in memory until garbage collection.</sys:String>
- <sys:String x:Key="EmptySubscriptions">No subscriptions. Secure credential storage and transactional updates are not implemented yet.</sys:String>
+ <sys:String x:Key="NoMetrics">Public IP and traffic counters are not collected in this phase. Latency is an explicit HTTPS request through the active proxy.</sys:String>
+ <sys:String x:Key="CoreNotice">HTTP / SOCKS5 loopback proxy · no TUN</sys:String>
+ <sys:String x:Key="Preview">Import server profiles</sys:String><sys:String x:Key="Validate">Validate and import</sys:String>
+ <sys:String x:Key="PreviewNotice">VLESS, VMess, Trojan and Shadowsocks share links, one per line. Profiles are encrypted for this Windows user. Input is cleared after import.</sys:String>
+ <sys:String x:Key="EmptySubscriptions">HTTPS subscriptions are encrypted locally. Updates import supported share-link lists; errors preserve existing servers. Private network addresses are blocked.</sys:String>
  <sys:String x:Key="AddUnavailable">Add subscription — unavailable</sys:String>
- <sys:String x:Key="RoutingUnavailable">Routing presets and advanced rules are unavailable until core capability validation is implemented.</sys:String>
+ <sys:String x:Key="RoutingUnavailable">All local proxy traffic uses the selected server. Advanced routing and TUN are outside Phase 2.</sys:String>
  <sys:String x:Key="RunChecks">Run local checks</sys:String><sys:String x:Key="Theme">Appearance</sys:String>
  <sys:String x:Key="Language">Language</sys:String><sys:String x:Key="Save">Save preferences</sys:String>
- <sys:String x:Key="CloseNotice">Closing the window exits SHAGHAD and removes its tray icon. Autostart, TUN and System Proxy are unavailable.</sys:String>
+ <sys:String x:Key="CloseNotice">Closing SHAGHAD restores its approved Windows proxy changes and stops only its own core. After an abrupt exit, review the recovery journal in Settings.</sys:String>
  <sys:String x:Key="About">About SHAGHAD</sys:String>
  <sys:String x:Key="ProductDescription">Modern Secure Network Client</sys:String>
- <sys:String x:Key="DevelopmentBuild">Development build · v0.1</sys:String>
+ <sys:String x:Key="DevelopmentBuild">Development build · v0.2</sys:String>
  <sys:String x:Key="ConnectionStatus">Connection status</sys:String>
- <sys:String x:Key="Connecting">Connecting</sys:String><sys:String x:Key="Connected">Connected</sys:String>
+ <sys:String x:Key="Connecting">Starting core</sys:String><sys:String x:Key="Connected">Local proxy ready</sys:String>
  <sys:String x:Key="Disconnecting">Disconnecting</sys:String><sys:String x:Key="ConnectionError">Connection error</sys:String>
  <sys:String x:Key="ConnectionModeUnavailable">Connection mode · unavailable</sys:String>
  <sys:String x:Key="ChangeServer">Change server</sys:String>
@@ -31,7 +42,12 @@
  <sys:String x:Key="AppearanceTitle">Make SHAGHAD yours</sys:String>
  <sys:String x:Key="ApplicationVersion">Application version</sys:String>
  <sys:String x:Key="CoreVersion">Core version</sys:String>
- <sys:String x:Key="CoreNotInstalled">Not installed · core execution unavailable</sys:String>
+ <sys:String x:Key="CoreNotInstalled">Not checked</sys:String>
+ <sys:String x:Key="Disconnect">Stop / cancel</sys:String><sys:String x:Key="TestProxy">Test HTTPS / latency</sys:String>
+ <sys:String x:Key="ClipboardImport">Import clipboard</sys:String><sys:String x:Key="SelectServer">Use selected server</sys:String><sys:String x:Key="Remove">Remove selected</sys:String>
+ <sys:String x:Key="SubscriptionName">Subscription name</sys:String><sys:String x:Key="AddSubscription">Save subscription</sys:String><sys:String x:Key="UpdateSubscription">Update selected</sys:String>
+ <sys:String x:Key="SystemProxyTitle">Windows System Proxy</sys:String><sys:String x:Key="SystemProxyNotice">Apply requires confirmation. Previous manual, PAC and discovery settings are preserved in an encrypted recovery journal. Changes made by other applications are preserved.</sys:String>
+ <sys:String x:Key="ApplyProxy">Apply with confirmation</sys:String><sys:String x:Key="RestoreProxy">Restore / recover</sys:String><sys:String x:Key="CheckCores">Verify installed cores</sys:String>
  <sys:String x:Key="GitHubRepository">GitHub repository</sys:String>
  <sys:String x:Key="OpenLicenses">Open-source licenses</sys:String>
  <sys:String x:Key="Attribution">SHAGHAD is an independent application using v2rayN ServiceLib 7.25.4, © 2dust and contributors, under GPL v3. No warranty. SHAGHAD is not an official v2rayN or Hiddify product. Vazirmatn © The Vazirmatn Project Authors, SIL OFL 1.1. Full dependency notices accompany development builds.</sys:String>

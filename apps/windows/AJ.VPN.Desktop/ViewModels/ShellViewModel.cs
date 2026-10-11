@@ -6,13 +6,23 @@ using Microsoft.Extensions.Logging;
 
 namespace AJ.VPN.Desktop.ViewModels;
 
-public sealed class ShellViewModel : ObservableObject
+public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly ISettingsService settingsService;
     private readonly IDiagnosticsService diagnosticsService;
-    private readonly IProfileValidator validator;
     private readonly ILogger<ShellViewModel> logger;
     private readonly ConnectionService connection;
+    private readonly LibraryService library;
+    private readonly ILocalProxyBackend backend;
+    private readonly ICoreCatalog catalog;
+    private readonly AJ.VPN.Infrastructure.SystemProxyService proxy;
+    private CancellationTokenSource? networkCancellation;
+    private Task? connectOperation;
+    private SavedProfile? selectedServer;
+    private Subscription? selectedSubscription;
+    private CoreKind selectedCore;
+    private string subscriptionName = "", subscriptionUrl = "", coreSummary = "Not checked", latency = "—";
+    private bool busy;
     private string currentPage = "Dashboard";
     private string notice = "";
     private string profileInput = "";
@@ -21,21 +31,75 @@ public sealed class ShellViewModel : ObservableObject
     private string selectedLanguage = "en";
     private ApplicationSettings settings = new();
     private bool settingsWritable = true;
-    public ShellViewModel(ISettingsService settingsService, IDiagnosticsService diagnosticsService, IProfileValidator validator, ILogger<ShellViewModel> logger, ConnectionService connection)
+    public ShellViewModel(ISettingsService settingsService, IDiagnosticsService diagnosticsService, ILogger<ShellViewModel> logger, ConnectionService connection,
+        LibraryService library, ILocalProxyBackend backend, ICoreCatalog catalog, AJ.VPN.Infrastructure.SystemProxyService proxy)
     {
         this.settingsService = settingsService;
         this.diagnosticsService = diagnosticsService;
-        this.validator = validator;
         this.logger = logger;
         this.connection = connection;
+        this.library = library; this.backend = backend; this.catalog = catalog; this.proxy = proxy;
+        InitializePremium();
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "Dashboard");
         SaveCommand = new AsyncCommand(SaveAsync, HandleFailure);
         DiagnosticsCommand = new AsyncCommand(CheckAsync, HandleFailure);
         ValidateCommand = new AsyncCommand(ValidateAsync, HandleFailure);
-        ExitCommand = new RelayCommand(_ => System.Windows.Application.Current.Shutdown());
+        ExitCommand = new RelayCommand(_ => System.Windows.Application.Current.MainWindow?.Close());
+        ClipboardCommand = new AsyncCommand(async () => { ProfileInput = System.Windows.Clipboard.GetText(); await ValidateAsync(); }, HandleFailure);
+        ActivateCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.SelectAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
+        RemoveServerCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.RemoveProfileAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
+        ConnectCommand = new AsyncCommand(async () => { connectOperation = ConnectAsync(); await connectOperation; }, HandleFailure);
+        DisconnectCommand = new AsyncCommand(DisconnectAsync, HandleFailure);
+        ProbeCommand = new AsyncCommand(ProbeAsync, HandleFailure);
+        AddSubscriptionCommand = new AsyncCommand(async () => { EnsureIdle(); if (EditingSubscriptionId != null) await library.EditSubscriptionAsync(EditingSubscriptionId, SubscriptionName, SubscriptionUrl); else await library.AddSubscriptionAsync(SubscriptionName, SubscriptionUrl); EditingSubscriptionId = null; SubscriptionUrl = ""; RefreshLibrary(); Notice = "Subscription saved with Windows user encryption. Update explicitly to import its servers."; }, HandleFailure);
+        UpdateSubscriptionCommand = new AsyncCommand(async () =>
+        {
+            EnsureIdle(); if (SelectedSubscription == null) return;
+            Busy = true; networkCancellation = new();
+            try { await library.UpdateSubscriptionAsync(SelectedSubscription.Id, networkCancellation.Token); RefreshLibrary(); Notice = "Subscription updated. Imported profiles passed validation."; }
+            finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; }
+        }, HandleFailure);
+        RemoveSubscriptionCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedSubscription != null) await library.RemoveSubscriptionAsync(SelectedSubscription.Id); RefreshLibrary(); }, HandleFailure);
+        RefreshCoresCommand = new AsyncCommand(RefreshCoresAsync, HandleFailure);
+        ApplyProxyCommand = new AsyncCommand(ApplyProxyAsync, HandleFailure);
+        RestoreProxyCommand = new AsyncCommand(async () =>
+        {
+            var approved = proxy.IsApplied || Confirm("Restore the previous Windows proxy settings recorded by SHAGHAD? Any changes made outside SHAGHAD will be preserved.");
+            if (approved) Notice = await proxy.RestoreAsync(true);
+        }, HandleFailure);
+        connection.StateChanged += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshState);
+        backend.UnexpectedExit += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+        {
+            try { Notice = "Core exited unexpectedly. " + await proxy.RestoreAsync(); await backend.StopAsync(CancellationToken.None); }
+            catch { HandleFailure(new InvalidOperationException()); }
+            RefreshState();
+        });
     }
     public ApplicationSettings Settings => settings;
     public ConnectionState State => connection.State;
+    public bool InternetVerified => connection.InternetVerified;
+    public string Endpoint => backend.Port is int port ? $"127.0.0.1:{port}" : Resource("ProxyStopped");
+    public string Verification => Resource(InternetVerified ? "InternetVerified" : "InternetUnverified");
+    public string ActiveServer => library.Active?.Server.Name ?? Resource("NoServer");
+    public bool HasActiveProfile => library.Active != null;
+    private static string Resource(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
+    public void RefreshLocalizedText()
+    {
+        Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification));
+    }
+    public string CoreSummary { get => coreSummary; private set => Set(ref coreSummary, value); }
+    public string Latency { get => latency; private set => Set(ref latency, value); }
+    public bool Busy { get => busy; private set { Set(ref busy, value); Raise(nameof(CanEdit)); } }
+    public bool CanEdit => !Busy && State is ConnectionState.Disconnected or ConnectionState.Error;
+    public SavedProfile? SelectedServer { get => selectedServer; set => Set(ref selectedServer, value); }
+    public Subscription? SelectedSubscription { get => selectedSubscription; set => Set(ref selectedSubscription, value); }
+    public CoreKind SelectedCore { get => selectedCore; set { if (Set(ref selectedCore, value)) Raise(nameof(CoreDisplay)); } }
+    public string CoreDisplay => SelectedCore == CoreKind.SingBox ? "sing-box" : "Xray";
+    public IReadOnlyList<CoreKind> Cores { get; } = Enum.GetValues<CoreKind>();
+    public string SubscriptionName { get => subscriptionName; set => Set(ref subscriptionName, value); }
+    public string SubscriptionUrl { get => subscriptionUrl; set => Set(ref subscriptionUrl, value); }
+    public ObservableCollection<SavedProfile> Servers { get; } = [];
+    public ObservableCollection<Subscription> Subscriptions { get; } = [];
     public string ApplicationVersion => typeof(ShellViewModel).Assembly.GetName().Version?.ToString(3) ?? "Unavailable";
     public string GitHubRepository => "https://github.com/Shaghad/shaghad-windows";
     public string CurrentPage { get => currentPage; set => Set(ref currentPage, value); }
@@ -52,6 +116,18 @@ public sealed class ShellViewModel : ObservableObject
     public ICommand DiagnosticsCommand { get; }
     public ICommand ValidateCommand { get; }
     public ICommand ExitCommand { get; }
+    public ICommand ClipboardCommand { get; }
+    public ICommand ActivateCommand { get; }
+    public ICommand RemoveServerCommand { get; }
+    public ICommand ConnectCommand { get; }
+    public ICommand DisconnectCommand { get; }
+    public ICommand ProbeCommand { get; }
+    public ICommand AddSubscriptionCommand { get; }
+    public ICommand UpdateSubscriptionCommand { get; }
+    public ICommand RemoveSubscriptionCommand { get; }
+    public ICommand RefreshCoresCommand { get; }
+    public ICommand ApplyProxyCommand { get; }
+    public ICommand RestoreProxyCommand { get; }
     public event EventHandler<ApplicationSettings>? AppearanceChanged;
     public async Task InitializeAsync()
     {
@@ -64,6 +140,10 @@ public sealed class ShellViewModel : ObservableObject
         }
         SelectedTheme = settings.Theme;
         SelectedLanguage = settings.Language;
+        try { await library.InitializeAsync(); RefreshLibrary(); }
+        catch { Notice = "Encrypted server library could not be loaded. Existing data is preserved and changes are disabled."; logger.LogWarning(new EventId(203), "Library load failed"); }
+        try { if (await proxy.HasRecoveryAsync()) Notice = "A Windows proxy recovery journal exists. Review Settings and explicitly restore before applying a new proxy."; }
+        catch { Notice = "Proxy recovery journal is unreadable. System Proxy changes are blocked until it is repaired."; }
     }
     private async Task SaveAsync()
     {
@@ -84,16 +164,89 @@ public sealed class ShellViewModel : ObservableObject
     }
     private async Task ValidateAsync()
     {
+        EnsureIdle();
         var input = ProfileInput;
         ProfileInput = "";
-        var result = await Task.Run(() => validator.Validate(input));
-        ProfileResult = result.Message;
-        if (result.Server is { } server) ProfileResult += $"\n{server.Protocol} · {server.Host}:{server.Port}";
-        logger.LogInformation(new EventId(result.IsValid ? 401 : 402), "Profile validation completed");
+        await library.ImportAsync(input);
+        RefreshLibrary();
+        ProfileResult = "Validated profiles imported and encrypted for this Windows user.";
+        logger.LogInformation(new EventId(401), "Profile import completed");
     }
+    private void EnsureIdle() { if (!CanEdit) throw new InvalidOperationException("Disconnect before changing the server library or core."); }
+    private void RefreshLibrary()
+    {
+        var subId = SelectedSubscription?.Id;
+        Servers.Clear(); foreach (var item in library.Current.Profiles) Servers.Add(item);
+        Subscriptions.Clear(); foreach (var item in library.Current.Subscriptions) Subscriptions.Add(item);
+        SelectedServer = library.Active; RefreshPremiumLibrary(); SelectedSubscription = Subscriptions.FirstOrDefault(s => s.Id == subId) ?? Subscriptions.FirstOrDefault();
+        SelectedCore = library.Current.Core; Raise(nameof(ActiveServer)); Raise(nameof(HasActiveProfile)); Raise(nameof(NeedsServer)); Raise(nameof(Protocol)); Raise(nameof(Location));
+    }
+    private void RefreshState()
+    {
+        foreach (var name in new[] { nameof(State), nameof(InternetVerified), nameof(Endpoint), nameof(Verification), nameof(CanEdit), nameof(ConsumerStatus), nameof(CanProbe), nameof(ConnectionMode), nameof(Duration) }) Raise(name);
+    }
+    private async Task RefreshCoresAsync()
+    {
+        var lines = new List<string>();
+        foreach (var kind in Cores)
+        {
+            try { var core = await catalog.FindAsync(kind); lines.Add($"{kind} {core.Version} · SHA-256 verified"); }
+            catch { lines.Add($"{kind} · missing or untrusted (run scripts/install-cores.ps1 -Download and rebuild)"); }
+        }
+        CoreSummary = string.Join("\n", lines);
+    }
+    private async Task ConnectAsync()
+    {
+        EnsureIdle(); if (SelectedServer == null) { Notice = "Import and select a server first."; return; }
+        Busy = true; Latency = "—"; networkCancellation = new();
+        try
+        {
+            await library.SetCoreAsync(SelectedCore, networkCancellation.Token);
+            await library.SelectAsync(SelectedServer.Server.Id, networkCancellation.Token);
+            await connection.ConnectAsync(SelectedServer.Server, networkCancellation.Token); connectedAt = DateTimeOffset.UtcNow; await ProbeAsync();
+            CoreSummary = backend.Version;
+            Notice = "Local proxy is ready. Test HTTPS to verify this server. Windows System Proxy remains under explicit control in Settings.";
+        }
+        finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; RefreshState(); Raise(nameof(ActiveServer)); }
+    }
+    private async Task DisconnectAsync()
+    {
+        networkCancellation?.Cancel();
+        if (connectOperation != null) { try { await connectOperation; } catch { } }
+        // Restore the approved settings before stopping the listener.
+        try { Notice = await proxy.RestoreAsync(); }
+        finally { await connection.DisconnectAsync(); }
+        Latency = "—"; PublicIp = "—"; connectedAt = null; RefreshState();
+    }
+    private async Task ProbeAsync()
+    {
+        var result = await backend.ProbeAsync(networkCancellation?.Token ?? CancellationToken.None); connection.RecordProbe(result);
+        Latency = result.Milliseconds is long ms ? $"{ms} ms" : "—";
+        Notice = result.Message; PublicIp = "—"; if (result.Success && backend.Port is int port) { var ip = await AJ.VPN.Infrastructure.PublicExitIp.FetchAsync(port, networkCancellation?.Token ?? CancellationToken.None); if (State == ConnectionState.Connected && backend.Port == port) PublicIp = ip ?? "—"; } RefreshState();
+    }
+    private async Task ApplyProxyAsync()
+    {
+        if (State != ConnectionState.Connected || backend.Port is not int port) { Notice = "Start a local proxy first."; return; }
+        if (!Confirm($"Change this Windows user's System Proxy to 127.0.0.1:{port}? Automatic configuration (PAC) and auto-detection will be disabled while SHAGHAD owns these settings. Previous settings will be encrypted and restored on disconnect or exit. Applications that ignore System Proxy are unaffected.")) return;
+        await proxy.ApplyAsync(port, true);
+        // Recheck after asynchronous journal persistence in case the core exited during approval/apply.
+        if (backend.Port != port || State != ConnectionState.Connected) Notice = await proxy.RestoreAsync();
+        else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings.";
+    }
+    private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD · Windows System Proxy", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
+    public async Task ShutdownAsync() { await DisconnectAsync(); }
     private void HandleFailure(Exception _)
     {
-        Notice = "The operation failed. Existing settings were preserved; check local file permissions and retry.";
+        Notice = _ switch
+        {
+            OperationCanceledException => "Operation cancelled or timed out. No successful connection was recorded.",
+            System.Security.Cryptography.CryptographicException => "Windows could not decrypt the local library. Existing encrypted data was preserved.",
+            System.Net.Http.HttpRequestException => "HTTPS subscription download failed. Check the URL, public host and TLS certificate. Existing servers were preserved.",
+            System.IO.FileNotFoundException or System.IO.DirectoryNotFoundException => "Core executable is missing. Run scripts/install-cores.ps1 -Download, then rebuild or publish.",
+            System.IO.InvalidDataException => "Configuration rejected. Check the share-link format, supported transport and selected core; subscription updates require a supported HTTPS share-link list. Existing data was preserved.",
+            _ => "Operation failed. Check profile validity, selected core and local Diagnostics. Existing saved data was preserved."
+        };
         logger.LogError(new EventId(500), "Operation failed");
     }
 }
+
