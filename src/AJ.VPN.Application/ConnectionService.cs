@@ -19,6 +19,7 @@ public sealed class ConnectionService(ICoreBackend backend)
             try
             {
                 var readiness = await backend.StartAsync(server, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!readiness.IsReady) throw new InvalidOperationException("Core readiness check failed.");
                 InternetVerified = readiness.InternetVerified;
                 State = ConnectionState.Connected;
@@ -49,7 +50,7 @@ public sealed class ConnectionService(ICoreBackend backend)
                 State = ConnectionState.Disconnected;
                 return true;
             }
-            catch { State = ConnectionState.Error; throw; }
+            catch { InternetVerified = false; State = ConnectionState.Error; throw; }
         }
         finally { gate.Release(); }
     }

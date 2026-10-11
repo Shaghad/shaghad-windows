@@ -10,7 +10,7 @@
  <sys:String x:Key="NoMetrics">آمار شبکه پس از فعال شدن هسته واقعی و منبع ترافیک در دسترس خواهد بود.</sys:String>
  <sys:String x:Key="CoreNotice">اعتبارسنجی در صفحه سرورها فعال است. اتصال به هسته تأییدشده و مدیریت امن چرخه اجرا نیاز دارد.</sys:String>
  <sys:String x:Key="Preview">اعتبارسنجی پیکربندی سرور</sys:String><sys:String x:Key="Validate">اعتبارسنجی</sys:String>
- <sys:String x:Key="PreviewNotice">فقط پیش‌نمایش. اطلاعات محرمانه پس از اعتبارسنجی پاک می‌شود و ذخیره نمی‌شود.</sys:String>
+ <sys:String x:Key="PreviewNotice">فقط پیش‌نمایش. کادر ورودی پاک می‌شود و اطلاعات ذخیره نمی‌شود؛ رشته‌ها تا جمع‌آوری حافظه در رم باقی می‌مانند.</sys:String>
  <sys:String x:Key="EmptySubscriptions">اشتراکی وجود ندارد. ذخیره امن اطلاعات و به‌روزرسانی تراکنشی هنوز پیاده‌سازی نشده است.</sys:String>
  <sys:String x:Key="AddUnavailable">افزودن اشتراک — در دسترس نیست</sys:String>
  <sys:String x:Key="RoutingUnavailable">مسیریابی تا پیاده‌سازی اعتبارسنجی قابلیت‌های هسته در دسترس نیست.</sys:String>

@@ -45,6 +45,7 @@ public sealed class FoundationTests : IDisposable
     [InlineData("https://example.invalid/?token=private")]
     [InlineData("vless://invalid")]
     [InlineData("{\"outbounds\":[]}")]
+    [InlineData("vless://00000000-0000-0000-0000-000000000001@example.invalid:443?security=tls&allowInsecure=1")]
     public void UnsupportedOrMalformedProfilesAreRejectedWithoutEchoingSecrets(string input)
     {
         var result = new ServiceLibProfileValidator().Validate(input);

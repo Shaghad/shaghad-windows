@@ -16,6 +16,7 @@ internal static class SmokeTest
         Directory.CreateDirectory(output);
         window.Width = 1120;
         window.Height = 780;
+        appearance(new(1, ThemePreference.Light, "en"));
         foreach (var page in new[] { "Dashboard", "Servers", "Subscriptions", "Routing", "Statistics", "Diagnostics", "Settings" })
         {
             vm.CurrentPage = page;

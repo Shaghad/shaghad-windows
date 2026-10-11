@@ -10,7 +10,7 @@
  <sys:String x:Key="NoMetrics">Network statistics are unavailable until a real core and traffic source are active.</sys:String>
  <sys:String x:Key="CoreNotice">Import validation is available on Servers. Connecting requires a verified core and safe lifecycle integration.</sys:String>
  <sys:String x:Key="Preview">Validate a server profile</sys:String><sys:String x:Key="Validate">Validate profile</sys:String>
- <sys:String x:Key="PreviewNotice">Preview only. Credentials are kept in memory for validation, cleared afterward, and never saved.</sys:String>
+ <sys:String x:Key="PreviewNotice">Preview only. The input field is cleared after validation. Credentials are not saved; managed strings remain in memory until garbage collection.</sys:String>
  <sys:String x:Key="EmptySubscriptions">No subscriptions. Secure credential storage and transactional updates are not implemented yet.</sys:String>
  <sys:String x:Key="AddUnavailable">Add subscription — unavailable</sys:String>
  <sys:String x:Key="RoutingUnavailable">Routing presets and advanced rules are unavailable until core capability validation is implemented.</sys:String>

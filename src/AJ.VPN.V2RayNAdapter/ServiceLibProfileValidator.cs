@@ -6,6 +6,12 @@ namespace AJ.VPN.V2RayNAdapter;
 
 public sealed class ServiceLibProfileValidator : IProfileValidator
 {
+    public ServiceLibProfileValidator()
+    {
+        // Upstream parsers catch and log exception text. No upstream file targets are configured.
+        // Disable their logging before accepting any user-controlled payload.
+        NLog.LogManager.Configuration = new NLog.Config.LoggingConfiguration();
+    }
     public ProfileValidation Validate(string input)
     {
         // Initial supported subset intentionally excludes arbitrary JSON/YAML and custom core arguments.
@@ -15,10 +21,18 @@ public sealed class ServiceLibProfileValidator : IProfileValidator
             return new(false, null, "Enter one supported share URI (VLESS, Trojan, SOCKS or Shadowsocks). Batch import is unavailable.");
         try
         {
+            foreach (var part in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var pair = part.Split('=', 2);
+                var key = Uri.UnescapeDataString(pair[0]).ToLowerInvariant();
+                var value = pair.Length > 1 ? Uri.UnescapeDataString(pair[1]).ToLowerInvariant() : "true";
+                if (key is "allowinsecure" or "insecure" or "skip-cert-verify" or "skiptlsverify" && value is not ("false" or "0"))
+                    return new(false, null, "Profiles that disable TLS verification are not accepted.");
+            }
             var profile = FmtHandler.ResolveConfig(input, out _);
             if (profile == null || !profile.IsValid() || string.IsNullOrWhiteSpace(profile.Address) || profile.Port is < 1 or > 65535)
                 return new(false, null, "The profile is invalid. Check its protocol, host, port and credentials.");
-            if (string.Equals(profile.AllowInsecure, "true", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(profile.AllowInsecure, "true", StringComparison.OrdinalIgnoreCase) || profile.AllowInsecure == "1")
                 return new(false, null, "Profiles that disable TLS verification are not accepted.");
             var server = new Server(Guid.NewGuid().ToString("N"), string.IsNullOrWhiteSpace(profile.Remarks) ? "Imported server" : profile.Remarks,
                 profile.ConfigType.ToString(), profile.Address, profile.Port);
