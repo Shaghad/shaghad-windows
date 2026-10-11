@@ -6,6 +6,29 @@ namespace AJ.VPN.V2RayNAdapter;
 
 public sealed class ServiceLibProfileValidator : IProfileValidator
 {
+    public string? CoreCompatibilityError(string input, CoreKind kind)
+    {
+        if (!Enum.IsDefined(kind)) return "Select an installed supported core.";
+        if (!Validate(input).IsValid) return "The saved profile is invalid. Import a supported profile.";
+        var node = FmtHandler.ResolveConfig(input, out _)!;
+        var network = node.GetNetwork();
+        var extra = node.GetProtocolExtra();
+        var transport = node.GetTransportExtra();
+        if (kind == CoreKind.SingBox)
+        {
+            if (node.ConfigType == ServiceLib.Enums.EConfigType.VLESS && !string.IsNullOrEmpty(extra.VlessEncryption) && extra.VlessEncryption != "none")
+                return "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.";
+            if (network is "xhttp" or "kcp") return "This transport requires Xray. Select Xray; the transport will not be substituted.";
+            if (network == "raw" && transport.RawHeaderType == "http") return "Xray raw TCP HTTP obfuscation is not sing-box HTTP transport. Select Xray to preserve the wire protocol.";
+            if (network == "grpc" && (!string.IsNullOrEmpty(transport.GrpcAuthority) || transport.GrpcMode == "multi"))
+                return "This gRPC authority/mode cannot be preserved by the installed sing-box adapter. Select Xray.";
+            if (node.ConfigType == ServiceLib.Enums.EConfigType.Shadowsocks && (network != "raw" || node.StreamSecurity is "tls" or "reality"))
+                return "This Shadowsocks profile requires an external transport plugin. Import a plain supported Shadowsocks profile.";
+        }
+        if (!string.IsNullOrEmpty(extra.Flow) && (network != "raw" || node.StreamSecurity is not ("tls" or "reality")))
+            return "VLESS Vision flow requires raw TCP with TLS or REALITY. Ask the provider for a valid profile; security will not be changed.";
+        return null;
+    }
     public ServiceLibProfileValidator()
     {
         // Upstream parsers catch and log exception text. No upstream file targets are configured.

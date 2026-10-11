@@ -3,7 +3,7 @@
  <sys:String x:Key="Subscriptions">اشتراک‌ها</sys:String><sys:String x:Key="Routing">مسیریابی</sys:String>
  <sys:String x:Key="Statistics">آمار</sys:String><sys:String x:Key="Diagnostics">عیب‌یابی</sys:String>
  <sys:String x:Key="Settings">تنظیمات</sys:String><sys:String x:Key="Exit">خروج</sys:String>
- <sys:String x:Key="Disconnected">قطع اتصال</sys:String><sys:String x:Key="Connect">اجرای پروکسی</sys:String>
+ <sys:String x:Key="Disconnected">قطع اتصال</sys:String><sys:String x:Key="Connect">اتصال</sys:String>
  <sys:String x:Key="Welcome">وضعیت اتصال شما، روشن و ساده.</sys:String>
  <sys:String x:Key="ImportServer">افزودن سرور</sys:String>
  <sys:String x:Key="DashboardSetupHint">برای شروع، سرور خود را اضافه کنید.</sys:String>
@@ -43,7 +43,7 @@
  <sys:String x:Key="ApplicationVersion">نسخه برنامه</sys:String>
  <sys:String x:Key="CoreVersion">نسخه هسته</sys:String>
  <sys:String x:Key="CoreNotInstalled">بررسی نشده</sys:String>
- <sys:String x:Key="Disconnect">توقف / لغو</sys:String><sys:String x:Key="TestProxy">آزمون HTTPS و تأخیر</sys:String>
+ <sys:String x:Key="Disconnect">قطع اتصال</sys:String><sys:String x:Key="TestProxy">آزمون HTTPS و تأخیر</sys:String>
  <sys:String x:Key="ClipboardImport">ورود از کلیپ‌بورد</sys:String><sys:String x:Key="SelectServer">انتخاب سرور</sys:String><sys:String x:Key="Remove">حذف انتخاب‌شده</sys:String>
  <sys:String x:Key="SubscriptionName">نام اشتراک</sys:String><sys:String x:Key="AddSubscription">ذخیره اشتراک</sys:String><sys:String x:Key="UpdateSubscription">به‌روزرسانی انتخاب‌شده</sys:String>
  <sys:String x:Key="SystemProxyTitle">پروکسی سیستم ویندوز</sys:String><sys:String x:Key="SystemProxyNotice">اعمال نیازمند تأیید شماست. تنظیمات قبلی دستی، PAC و تشخیص خودکار برای بازیابی رمزگذاری می‌شود. تغییرات برنامه‌های دیگر حفظ می‌شود.</sys:String>
@@ -51,4 +51,39 @@
  <sys:String x:Key="GitHubRepository">مخزن گیت‌هاب</sys:String>
  <sys:String x:Key="OpenLicenses">مجوزهای متن‌باز</sys:String>
  <sys:String x:Key="Attribution">شغاد برنامه‌ای مستقل است و از کتابخانه v2rayN ServiceLib نسخه ۷٫۲۵٫۴، اثر 2dust و همکاران، با مجوز GPL v3 استفاده می‌کند. این محصول رسمی v2rayN یا Hiddify نیست و ضمانتی ندارد. قلم وزیرمتن متعلق به نویسندگان پروژه Vazirmatn با مجوز SIL OFL 1.1 است. اطلاعات مجوز وابستگی‌ها همراه خروجی توسعه ارائه می‌شود.</sys:String>
+<sys:String x:Key="SystemProxyMode">حالت اتصال · پراکسی سیستم</sys:String>
+<sys:String x:Key="EditLabel">ویرایش</sys:String>
+<sys:String x:Key="EmptyServerManager">هنوز سروری ندارید. لینک سرور را اضافه یا از کلیپ‌بورد وارد کنید.</sys:String>
+<sys:String x:Key="UpdateAllLabel">به‌روزرسانی همه</sys:String>
+<sys:String x:Key="CopyIp">کپی آی‌پی</sys:String>
+<sys:String x:Key="CloseEditor">تمام</sys:String>
+<sys:String x:Key="UnknownLocation">مکان نامشخص</sys:String>
+<sys:String x:Key="DurationLabel">مدت اتصال</sys:String>
+<sys:String x:Key="UploadLabel">آپلود</sys:String>
+<sys:String x:Key="SubscriptionManagerHint">اشتراک‌های ذخیره‌شده را مدیریت کنید. حجم و تاریخ انقضا فقط با اطلاعات ارائه‌دهنده نمایش داده می‌شوند.</sys:String>
+<sys:String x:Key="TestAllLabel">آزمایش همه</sys:String>
+<sys:String x:Key="ExitIpLabel">آی‌پی خروجی پراکسی</sys:String>
+<sys:String x:Key="CoreReadyLabel">پراکسی آماده · تأیید نشده</sys:String>
+<sys:String x:Key="ActiveLabel">انتخاب‌شده</sys:String>
+<sys:String x:Key="DownloadLabel">دانلود</sys:String>
+<sys:String x:Key="UnavailableMetric">از هسته در دسترس نیست</sys:String>
+<sys:String x:Key="LocalProxyMode">حالت اتصال · پراکسی محلی</sys:String>
+<sys:String x:Key="EmptySubscriptionManager">هنوز اشتراکی ندارید. برای به‌روز نگه داشتن سرورها، نشانی ارائه‌دهنده را اضافه کنید.</sys:String>
+<sys:String x:Key="SearchLabel">جستجو</sys:String>
+<sys:String x:Key="NameLabel">نام</sys:String>
+<sys:String x:Key="CountryLabel">کشور</sys:String>
+<sys:String x:Key="ProtocolLabel">پروتکل</sys:String>
+<sys:String x:Key="PingLabel">تأخیر</sys:String>
+<sys:String x:Key="StatusLabel">وضعیت</sys:String>
+<sys:String x:Key="SelectionLabel">انتخاب</sys:String>
+<sys:String x:Key="NotTestedLabel">آزمایش نشده</sys:String>
+<sys:String x:Key="UnavailableLabel">نامشخص</sys:String>
+<sys:String x:Key="RemainingLabel">حجم باقی‌مانده</sys:String>
+<sys:String x:Key="ExpiresLabel">انقضا</sys:String>
+<sys:String x:Key="ProviderLabel">ارائه‌دهنده</sys:String>
+<sys:String x:Key="UpdatedLabel">به‌روزرسانی</sys:String>
+<sys:String x:Key="NotUpdatedLabel">به‌روز نشده</sys:String>
+<sys:String x:Key="SortNameLabel">نام ↑</sys:String>
+<sys:String x:Key="SortProtocolLabel">پروتکل ↑</sys:String>
 </ResourceDictionary>
+

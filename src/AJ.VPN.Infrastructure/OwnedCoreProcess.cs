@@ -14,6 +14,17 @@ public sealed class OwnedCoreProcess : IDisposable
     public Process Process { get; }
     public int DiagnosticChunks { get; private set; }
     public bool GracefulExit { get; private set; }
+    public string? LastFailureCategory { get; private set; }
+    public static string? ClassifyFailure(string text)
+    {
+        if (text.Contains("unexpected status", StringComparison.OrdinalIgnoreCase) || text.Contains("unrecognized reply", StringComparison.OrdinalIgnoreCase)) return "Remote transport upgrade rejected";
+        if (text.Contains("certificate", StringComparison.OrdinalIgnoreCase) || text.Contains("tls handshake", StringComparison.OrdinalIgnoreCase) || text.Contains("REALITY", StringComparison.OrdinalIgnoreCase)) return "Remote TLS/REALITY handshake failed";
+        if (text.Contains("lookup", StringComparison.OrdinalIgnoreCase) || text.Contains("resolve", StringComparison.OrdinalIgnoreCase)) return "Core DNS resolution failed";
+        if (text.Contains("dial tcp", StringComparison.OrdinalIgnoreCase) || text.Contains("connectex", StringComparison.OrdinalIgnoreCase)) return "Remote TCP establishment failed";
+        if (text.Contains("connection reset", StringComparison.OrdinalIgnoreCase) || text.Contains("EOF", StringComparison.Ordinal)) return "Remote stream closed; exact handshake stage unconfirmed";
+        if (text.Contains("ERROR", StringComparison.Ordinal) || text.Contains("error", StringComparison.Ordinal)) return "Core reported an unclassified error";
+        return null;
+    }
     private OwnedCoreProcess(Process process, SafeFileHandle job, SafeFileHandle output, SafeFileHandle error)
     {
         Process = process; this.job = job;
@@ -24,7 +35,20 @@ public sealed class OwnedCoreProcess : IDisposable
     {
         // Discard payloads immediately. Fixed buffers also bound malicious/no-newline log output.
         var buffer = new char[1024];
-        try { while (await reader.ReadAsync(buffer.AsMemory()) > 0) DiagnosticChunks++; }
+        var pending = "";
+        try
+        {
+            int count;
+            while ((count = await reader.ReadAsync(buffer.AsMemory())) > 0)
+            {
+                DiagnosticChunks++;
+                // Bounded in-memory inspection only; persist fixed categories, never payloads.
+                pending += new string(buffer, 0, count);
+                var category = ClassifyFailure(pending);
+                if (category != null) LastFailureCategory = category;
+                if (pending.Length > 4096) pending = pending[^1024..];
+            }
+        }
         catch (ObjectDisposedException) { } catch (IOException) { }
         finally { Array.Clear(buffer); }
     }

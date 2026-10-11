@@ -11,12 +11,10 @@ public sealed record CoreReadiness(bool IsReady, bool InternetVerified);
 public enum CoreKind { Xray, SingBox }
 public sealed record SavedProfile(Server Server, string ShareUri, string? SubscriptionId = null)
 {
-    public string CountryDisplay => Server.Country ?? "Unavailable"; public string PingDisplay { get; set; } = "—"; public string SelectionDisplay { get; set; } = "—";
     public override string ToString() => Server.Name;
 }
-public sealed record Subscription(string Id, string Name, string Url, DateTimeOffset? UpdatedAt = null)
+public sealed record Subscription(string Id, string Name, string Url, DateTimeOffset? UpdatedAt = null, long? RemainingBytes = null, DateTimeOffset? ExpiresAt = null)
 {
-    public string Summary { get; set; } = ""; public string UpdateDisplay => UpdatedAt is { } time ? $"Updated {time.ToLocalTime():g}" : "Not updated";
     public override string ToString() => Name;
 }
 public sealed record ProfileLibrary(int SchemaVersion, List<SavedProfile> Profiles, List<Subscription> Subscriptions,
@@ -27,4 +25,8 @@ public sealed record ProfileLibrary(int SchemaVersion, List<SavedProfile> Profil
 }
 public sealed record CoreInstallation(CoreKind Kind, string Path, string Version, string Sha256);
 public sealed record ProxyProbe(bool Success, long? Milliseconds, string Message);
+public sealed class CoreCompatibilityException(string safeMessage) : Exception(safeMessage);
 
+
+
+public sealed record SubscriptionDownload(string Content, long? RemainingBytes = null, DateTimeOffset? ExpiresAt = null);

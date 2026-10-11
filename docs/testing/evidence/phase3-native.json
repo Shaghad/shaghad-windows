@@ -1,0 +1,30 @@
+{
+  "Passed": true,
+  "Checks": [
+    "PASS Xray: pinned hash and version 26.3.27",
+    "PASS Xray VLESS: native configuration validation",
+    "PASS Xray VMess: native configuration validation",
+    "PASS Xray Trojan: native configuration validation",
+    "PASS Xray Shadowsocks: native configuration validation",
+    "PASS Xray: duplicate start rejected",
+    "PASS Xray: PID-owned loopback SOCKS readiness, graceful stop and listener release; internet unverified",
+    "PASS Xray: cancellation prevents startup",
+    "PASS Xray: unexpected owned-core exit clears readiness and connection state",
+    "PASS Xray: native configuration failure is detected before startup and private config is removed",
+    "PASS Xray: native bind/startup failure is detected and cleaned up",
+    "PASS Xray: real ten-second readiness timeout terminates the owned core and removes its config",
+    "PASS SingBox: pinned hash and version 1.14.3",
+    "PASS SingBox VLESS: native configuration validation",
+    "PASS SingBox VMess: native configuration validation",
+    "PASS SingBox Trojan: native configuration validation",
+    "PASS SingBox Shadowsocks: native configuration validation",
+    "PASS SingBox: duplicate start rejected",
+    "PASS SingBox: PID-owned loopback SOCKS readiness, graceful stop and listener release; internet unverified",
+    "PASS SingBox: cancellation prevents startup",
+    "PASS SingBox: unexpected owned-core exit clears readiness and connection state",
+    "PASS SingBox: native configuration failure is detected before startup and private config is removed",
+    "PASS SingBox: native bind/startup failure is detected and cleaned up"
+  ],
+  "RealConnectivityTested": false,
+  "SystemProxyChanged": false
+}

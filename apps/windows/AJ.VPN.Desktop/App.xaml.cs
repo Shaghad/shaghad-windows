@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -27,13 +27,15 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (e.Args.Length == 3 && e.Args[0] == "--core-semantics-audit")
+        { try { await CoreSemanticsAudit.RunAsync(Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2])); Shutdown(0); } catch { Shutdown(1); } return; }
         if (e.Args.Length == 3 && e.Args[0] == "--production-connectivity-test")
-        { try { await ProductionConnectivityTest.RunAsync(Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2])); Shutdown(0); } catch { Shutdown(1); } return; }
+        { try { Shutdown(await ProductionConnectivityTest.RunAsync(Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2])) ? 0 : 2); } catch { Shutdown(1); } return; }
         if (e.Args.Length == 2 && e.Args[0] == "--signal-core" && int.TryParse(e.Args[1], out var pid))
         { Shutdown(OwnedCoreProcess.SignalConsoleGroup(pid) ? 0 : 1); return; }
         if (e.Args.Length == 2 && e.Args[0] == "--core-self-test")
         { try { await CoreSelfTest.RunAsync(Path.GetFullPath(e.Args[1])); Shutdown(0); } catch { Shutdown(1); } return; }
-        var smoke = e.Args.Length == 2 && e.Args[0] == "--smoke-test";
+        var smoke = e.Args.Length == 2 && (e.Args[0] == "--smoke-test" || e.Args[0] == "--premium-live-test");
         try { await InitializeAsync(e, smoke); }
         catch (Exception ex)
         {
@@ -48,7 +50,7 @@ public partial class App : System.Windows.Application
     }
     private async Task InitializeAsync(StartupEventArgs e, bool smoke)
     {
-        var data = smoke ? Path.Combine(Path.GetFullPath(e.Args[1]), "preferences")
+        var data = smoke ? Path.Combine(Path.GetTempPath(), "SHAGHAD-premium-smoke", Guid.NewGuid().ToString("N"))
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VPN-AJ");
         ProtectedFiles.CreatePrivateDirectory(data);
         instanceLock = new FileStream(Path.Combine(data, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -81,7 +83,8 @@ public partial class App : System.Windows.Application
         MainWindow = services.GetRequiredService<MainWindow>();
         if (smoke)
         {
-            await SmokeTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
+            if (e.Args[0] == "--premium-live-test") await PremiumLiveTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
+            else await SmokeTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
             Shutdown(0);
             return;
         }
@@ -128,8 +131,8 @@ public partial class App : System.Windows.Application
         var previous = Resources.MergedDictionaries.FirstOrDefault(d => d.Source?.OriginalString.StartsWith("Themes/") == true);
         if (previous != null) Resources.MergedDictionaries.Remove(previous);
         Resources.MergedDictionaries.Insert(0, new ResourceDictionary { Source = new Uri($"Themes/{(SystemParameters.HighContrast ? "HighContrast" : dark ? "Dark" : "Light")}.xaml", UriKind.Relative) });
+        (MainWindow as MainWindow)?.UpdateNativeCaption();
         // Swap the entire DrawingImage: cached Freezables do not inherit refreshed theme brushes reliably.
         Resources["ShaghadSymbol"] = FindResource($"ShaghadSymbol{(SystemParameters.HighContrast ? "HighContrast" : dark ? "Dark" : "Light")}");
     }
 }
-

@@ -1,0 +1,12 @@
+{
+  "Core": "Xray",
+  "InternetVerified": false,
+  "PublicExitIpMeasured": false,
+  "CopyIpPassed": false,
+  "DisconnectClearedSession": true,
+  "LatencyAfterDisconnect": "\u2014",
+  "Layouts": [],
+  "Notice": "No proxy changes owned by this session.",
+  "ProductionLibraryChanged": false,
+  "SystemProxyChanged": false
+}

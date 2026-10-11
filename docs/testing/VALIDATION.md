@@ -1,3 +1,40 @@
+# Phase 3 completion audit — 2026-10-11
+
+## Current result
+
+The supplied VLESS profiles are supported through Xray without changing their required ML-KEM VLESS Encryption. The former sing-box failure is explained and incompatible assignments are rejected before execution. The installed sing-box cannot implement this encryption; no security downgrade or core substitution is performed. This resolves the application compatibility defect, **not** a claim that these profiles now work inside sing-box. No TUN, automatic server selection, failover or Windows proxy changes were implemented.
+
+## Executed validation
+
+| Command / check | Actual result |
+|---|---|
+| Workspace SDK Release build of `VPN-AJ.slnx`, `--no-restore --property:OutputPath=bin/Phase3Verified/` | Success; zero warnings/errors; isolated outputs preserve running app |
+| Release tests with matching output property, TRX at `artifacts/Phase3FinalTests` | **92 passed: 3 unit + 89 integration; zero failed/skipped** |
+| `scripts/core-smoke-test.ps1 -AppPath apps/windows/AJ.VPN.Desktop/bin/Phase3Verified/Shaghad.dll` | **23 native checks passed**; wrapper exit 0; both verified cores and all four synthetic protocol configs |
+| `scripts/connectivity-test.ps1 -AuthorizedSource D:/VPN-AJ/artifacts/phase3-connectivity -AppPath apps/windows/AJ.VPN.Desktop/bin/Phase3Verified/Shaghad.dll` | Wrapper exit 0 for required checks; **53 observations: 43 pass, six IPv6 endpoint failures, four unsupported sing-box combinations** |
+| Final equality/preservation audit using `--core-semantics-audit` | Exit 0; all 16 authorized profiles retain their Xray encryption and reject incompatible sing-box assignment |
+| Final Release WPF `--smoke-test` with isolated preferences | Eight pages and 32 layout combinations passed; updated Diagnostics renders; no live system proxy changes |
+| GitHub API and `git ls-remote` with network access | Authenticated as Shaghad; repository identity and push=true verified; default branch main; no publication |
+| `scripts/secret-audit.ps1` | 131 current text files and 222 historical text blobs across nine reachable commits inspected; nine value-suppressed findings manually reviewed (scanner expression, invalid/synthetic fixtures and public source-reference URLs) |
+
+Evidence: `artifacts/Phase3FinalTests/*2026-10-11_22_14_45*.trx`, `artifacts/core-check-20261011-220930/result.json`, `artifacts/connectivity-640f79d0e14d4f94805918a9be455eb5/result.json`, `artifacts/phase3-final-semantics.json`, `artifacts/phase3-verified-smoke/result.txt`. Sanitized durable copies are under `docs/testing/evidence/phase3-*`. A follow-up current-build run at `artifacts/phase3-public-diagnostics/result.json` repeated the same 53 outcomes and confirmed a measured public exit IP without recording its value; this is the durable connectivity copy. Public-IP parsing consumes the complete bounded response, rejects private/reserved/mapped-loopback addresses and rejects shorthand IPv4. Earlier attempts include a local TLS fixture timeout: the fixture failed to serve client retries, was repaired, then the targeted test and full suite passed. No certificate trust settings were modified.
+
+## Meaning and remaining limits
+
+Actual Xray HTTP/HTTPS/IPv4 requests passed through HTTP and SOCKS5 on representative HTTPUpgrade, WS, raw TCP and XHTTP profiles. XHTTP also passed IPv6; the other representatives failed IPv6 checks with unconfirmed endpoint/provider/network causes. This is not proof of a core defect or universal lack of provider IPv6. Server bootstrap DNS resolved IPv4-only answers for these representatives. Proxy DNS wire-contract tests prove domain forwarding; packet-level DNS leak absence remains unverified.
+
+The original Xray profile passed manual retry, active-probe cancellation, pre-cancelled startup, deliberate owned-core crash detection/cleanup and manual reconnect with real HTTPS verification. Synthetic native tests additionally cover duplicate starts, occupied ports, native config failure, cancellation and real startup timeout. A controlled loopback TLS test rejects an untrusted target certificate through HTTP CONNECT.
+
+No real VMess/Trojan/Shadowsocks profile was supplied. Real compatible sing-box remote connectivity remains unverified; native fixtures are not remote coverage. Outer TLS/REALITY/uTLS/ALPN combinations absent from the supplied profiles, packet-level DNS attribution, full server inventory, sustained load, sleep/resume, interface changes, clean-machine deployment and live browser/WinINet behavior remain unverified. The earlier interactive session was stopped by the user; this task used WPF smoke rendering, not further computer-use automation.
+
+Git was master at 2489447, matching remote master when checked; remote main was bd7adb86e103f75182d58a6ed47d7b45a1ab155a and was not overwritten. Existing working changes were preserved. Upstream gitlink remains 7d6a967c18c697f28dc6917122ed3a4993fcf336; no upstream source edit. Secret scanning is pattern-based, includes reachable textual history and commit messages, excludes upstream history/ignored private data/binary assets, and is not mathematical proof of secret absence. No commit, push or source publication was performed in this task.
+
+See `SINGBOX-COMPATIBILITY.md`, `CONNECTIVITY-MATRIX.md` and `WININET-INTERACTIVE-VALIDATION.md`. **The full production readiness gate remains open for the explicitly unverified cases.** TUN/failover work has not started.
+
+## Historical initial Phase 3 attempt
+
+The following earlier report is retained as history. Its authentication, retry and root-cause limitations are superseded by the completion audit above.
+
 ## Phase 3 — Production connectivity validation, 2026-10-11
 
 The user supplied an authorized HTTPS subscription and explicitly kept live system proxy tests pending. The subscription token, raw links, profile names and hosts are omitted from this report. No source publication, force push, WinINet/WinHTTP, system DNS or routing changes were performed. No TUN or Auto Failover was implemented.

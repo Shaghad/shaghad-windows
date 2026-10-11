@@ -1,0 +1,146 @@
+[
+  {
+    "profileIndex": 0,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "httpupgrade",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 1,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "httpupgrade",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 2,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 3,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 4,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 5,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 6,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "raw",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 7,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "raw",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 8,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "raw",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 9,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "xhttp",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 10,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "xhttp",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 11,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 12,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "httpupgrade",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 13,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "xhttp",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 14,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "raw",
+    "privateValuesOmitted": true
+  },
+  {
+    "profileIndex": 15,
+    "core": "SingBox",
+    "status": "unsupported",
+    "reason": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed.",
+    "xrayPreservesEncryption": true,
+    "xrayTransport": "ws",
+    "privateValuesOmitted": true
+  }
+]

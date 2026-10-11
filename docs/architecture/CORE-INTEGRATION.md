@@ -1,5 +1,17 @@
 # Verified ServiceLib integration contract
 
+## Phase 3 compatibility and diagnostics contract
+
+`IProfileValidator.CoreCompatibilityError` provides a controlled error for requirements the selected engine cannot preserve. The concrete ServiceLib validator runs this before library core/profile assignment and again in `ServiceLibConfigurationGenerator`. UI core selection surfaces the same actionable message. Rejection never strips encryption, changes transport/security parameters or initializes the upstream application singleton. The existing storage transaction publishes a snapshot only after save succeeds.
+
+Actual authorized VLESS profiles require Xray ML-KEM VLESS Encryption. Xray writes the original `VlessEncryption` into the native outbound; pinned sing-box lacks that field/capability. The integration therefore supports these profiles through Xray and refuses sing-box. Native core syntax acceptance is a separate layer and cannot prove remote security equivalence. See `docs/testing/SINGBOX-COMPATIBILITY.md` for normalized field comparison and failure-stage evidence.
+
+`ProxyConnectivityProbe` has fixed explicit-proxy endpoints for HTTP, certificate-validated HTTPS and family-specific public exit measurements. There is no direct fallback, ambient proxy credential, cookie or redirect handling. `LocalProxyBackend` caches only current-session measured outcomes/public address and sanitized errors. Disconnect/core exit invalidates current measurements. `FoundationDiagnostics` displays these values and explicitly leaves packet-level DNS path/leak claims unverified. Target-domain forwarding is tested at HTTP CONNECT/SOCKS5 boundaries; server bootstrap still uses local DNS. No host DNS settings are managed.
+
+Owned process output never goes to disk/UI. Bounded in-memory inspection maps known patterns to fixed categories; unknown stages remain unknown. `SafeFileLoggerProvider` still writes event metadata only. A late exit notification is guarded by connection generation; an explicit retry cleans dead resources before restarting. Core-crash recovery never changes profile or implements failover. Windows proxy ownership restoration remains separate and unchanged; this task did not mutate OS proxy settings.
+
+The explicit connectivity harness accepts either an authorized encrypted test-library directory or a private subscription request file, uses a new isolated output directory, tests representative protocol/transport combinations and reports unsupported combinations separately. It deliberately kills only its owned core PID for crash validation. Required check failures produce nonzero exit; IPv6 endpoint failures are recorded without declaring a core defect. System Proxy tests require the separate procedure and approval in `docs/testing/WININET-INTERACTIVE-VALIDATION.md`.
+
 Source: external/v2rayN/v2rayN, tag 7.25.4, commit 7d6a967c18c697f28dc6917122ed3a4993fcf336.
 
 Actual APIs inspected:

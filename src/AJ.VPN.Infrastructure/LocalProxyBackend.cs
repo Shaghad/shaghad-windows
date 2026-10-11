@@ -20,6 +20,10 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
     public int? OwnedProcessId => owned?.Process.Id;
     public string Version { get; private set; } = "Not initialized";
     public bool LastStopWasGraceful { get; private set; }
+    public string? LastCoreFailure => owned?.LastFailureCategory;
+    public ProxyProbe? LastProbe { get; private set; }
+    public string? LastError { get; private set; }
+    public string? PublicExitAddress { get; private set; }
     public bool IsAvailable => library.Active != null;
     public event EventHandler? UnexpectedExit;
     public async Task<CoreReadiness> StartAsync(Server server, CancellationToken cancellationToken)
@@ -32,6 +36,7 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
             if (owned != null) throw new InvalidOperationException("A core is already owned by this application.");
             attempted = true;
             stopping = false;
+            LastProbe = null; PublicExitAddress = null; LastError = null;
             var profile = library.Current.Profiles.Find(p => p.Server.Id == server.Id) ?? throw new InvalidDataException("Select a saved server.");
             var installation = await catalog.FindAsync(library.Current.Core, cancellationToken);
             executableLock = await TrustedCoreCatalog.OpenVerifiedAsync(installation.Path, installation.Sha256, cancellationToken);
@@ -68,9 +73,19 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
             logger.LogInformation(new EventId(610), "Owned core and local listener are ready");
             return new(true, false);
         }
-        catch
+        catch (Exception ex)
         {
-            if (attempted) { logger.LogWarning(new EventId(failureEvent), "Core startup failed at a sanitized stage"); await CleanupAsync(); }
+            if (attempted)
+            {
+                LastError = ex is CoreCompatibilityException compatibility ? compatibility.Message : failureEvent switch
+                {
+                    620 => "Core discovery or executable verification failed. Check the installed trusted core.",
+                    621 => "Profile generation failed. Check profile and core compatibility.",
+                    622 => "Native configuration validation failed. Check profile and core compatibility.",
+                    _ => ex is OperationCanceledException && cancellationToken.IsCancellationRequested ? "Core startup was cancelled." : "Core startup failed or timed out before local readiness. Check listener availability."
+                };
+                logger.LogWarning(new EventId(failureEvent), "Core startup failed at a sanitized stage"); await CleanupAsync();
+            }
             throw;
         }
         finally { gate.Release(); }
@@ -82,6 +97,7 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
             await process.Process.WaitForExitAsync();
             if (stopping || owned != process) return;
             Port = null;
+            LastProbe = null; PublicExitAddress = null; LastError = "The owned core exited unexpectedly. Reconnect to restart it.";
             logger.LogWarning(new EventId(611), "Owned core exited unexpectedly");
             UnexpectedExit?.Invoke(this, EventArgs.Empty);
         }
@@ -108,7 +124,7 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
     }
     private async Task CleanupAsync()
     {
-        stopping = true; Port = null;
+        stopping = true; Port = null; LastProbe = null; PublicExitAddress = null;
         if (owned != null)
         {
             var process = owned; owned = null;
@@ -147,6 +163,11 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
         if (process == null || port == null || process.Process.HasExited) return new(false, null, "Start a local proxy before testing.");
         var result = await ProxyConnectivityProbe.RunAsync(port.Value, false, cancellationToken);
         if (owned != process || Port != port || process.Process.HasExited) return new(false, null, "The proxy changed during the test.");
+        LastProbe = result;
+        LastError = result.Success ? null : LastCoreFailure ?? result.Message;
+        PublicExitAddress = result.Success ? await PublicExitIp.FetchAsync(port.Value, cancellationToken) : null;
+        if (owned != process || Port != port || process.Process.HasExited)
+        { LastProbe = null; PublicExitAddress = null; return new(false, null, "The proxy changed during the test."); }
         logger.LogInformation(new EventId(result.Success ? 630 : 631), "Sanitized proxy probe outcome");
         return result;
     }

@@ -1,0 +1,1 @@
+PASS: isolated offline import, active selection, search/filter/reset, sort, subscription add/edit/remove, server removal. Fixture uses example.invalid; real core startup, failed HTTPS verification, no public IP, disconnect cleanup, compact navigation and both dialogs captured. No successful network connection or fabricated measurements.

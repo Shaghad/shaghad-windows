@@ -65,7 +65,7 @@ public sealed partial class ShellViewModel : ObservableObject
         RestoreProxyCommand = new AsyncCommand(async () =>
         {
             var approved = proxy.IsApplied || Confirm("Restore the previous Windows proxy settings recorded by SHAGHAD? Any changes made outside SHAGHAD will be preserved.");
-            if (approved) Notice = await proxy.RestoreAsync(true);
+            if (approved) Notice = await proxy.RestoreAsync(true); Raise(nameof(ConnectionMode));
         }, HandleFailure);
         connection.StateChanged += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshState);
         backend.UnexpectedExit += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -85,7 +85,8 @@ public sealed partial class ShellViewModel : ObservableObject
     private static string Resource(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
     public void RefreshLocalizedText()
     {
-        Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification));
+        Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification)); Raise(nameof(ConsumerStatus)); Raise(nameof(Location)); Raise(nameof(ConnectionMode)); Raise(nameof(NeedsServer));
+        if (ServerView != null) RefreshPremiumLibrary();
     }
     public string CoreSummary { get => coreSummary; private set => Set(ref coreSummary, value); }
     public string Latency { get => latency; private set => Set(ref latency, value); }
@@ -93,7 +94,17 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool CanEdit => !Busy && State is ConnectionState.Disconnected or ConnectionState.Error;
     public SavedProfile? SelectedServer { get => selectedServer; set => Set(ref selectedServer, value); }
     public Subscription? SelectedSubscription { get => selectedSubscription; set => Set(ref selectedSubscription, value); }
-    public CoreKind SelectedCore { get => selectedCore; set { if (Set(ref selectedCore, value)) Raise(nameof(CoreDisplay)); } }
+    public CoreKind SelectedCore
+    {
+        get => selectedCore;
+        set
+        {
+            var profile = SelectedServer ?? library.Active;
+            if (profile != null && library.CoreCompatibilityError(profile, value) is string error)
+            { Notice = error; Raise(nameof(SelectedCore)); return; }
+            if (Set(ref selectedCore, value)) Raise(nameof(CoreDisplay));
+        }
+    }
     public string CoreDisplay => SelectedCore == CoreKind.SingBox ? "sing-box" : "Xray";
     public IReadOnlyList<CoreKind> Cores { get; } = Enum.GetValues<CoreKind>();
     public string SubscriptionName { get => subscriptionName; set => Set(ref subscriptionName, value); }
@@ -178,11 +189,15 @@ public sealed partial class ShellViewModel : ObservableObject
         var subId = SelectedSubscription?.Id;
         Servers.Clear(); foreach (var item in library.Current.Profiles) Servers.Add(item);
         Subscriptions.Clear(); foreach (var item in library.Current.Subscriptions) Subscriptions.Add(item);
-        SelectedServer = library.Active; RefreshPremiumLibrary(); SelectedSubscription = Subscriptions.FirstOrDefault(s => s.Id == subId) ?? Subscriptions.FirstOrDefault();
+        SelectedServer = library.Active; SelectedSubscription = Subscriptions.FirstOrDefault(s => s.Id == subId) ?? Subscriptions.FirstOrDefault(); RefreshPremiumLibrary();
         SelectedCore = library.Current.Core; Raise(nameof(ActiveServer)); Raise(nameof(HasActiveProfile)); Raise(nameof(NeedsServer)); Raise(nameof(Protocol)); Raise(nameof(Location));
     }
     private void RefreshState()
     {
+        if (State is ConnectionState.Disconnected or ConnectionState.Error)
+        {
+            ipCancellation?.Cancel(); PublicIp = "—"; Latency = "—"; connectedAt = null;
+        }
         foreach (var name in new[] { nameof(State), nameof(InternetVerified), nameof(Endpoint), nameof(Verification), nameof(CanEdit), nameof(ConsumerStatus), nameof(CanProbe), nameof(ConnectionMode), nameof(Duration) }) Raise(name);
     }
     private async Task RefreshCoresAsync()
@@ -201,17 +216,17 @@ public sealed partial class ShellViewModel : ObservableObject
         Busy = true; Latency = "—"; networkCancellation = new();
         try
         {
-            await library.SetCoreAsync(SelectedCore, networkCancellation.Token);
             await library.SelectAsync(SelectedServer.Server.Id, networkCancellation.Token);
+            await library.SetCoreAsync(SelectedCore, networkCancellation.Token);
             await connection.ConnectAsync(SelectedServer.Server, networkCancellation.Token); connectedAt = DateTimeOffset.UtcNow; await ProbeAsync();
             CoreSummary = backend.Version;
-            Notice = "Local proxy is ready. Test HTTPS to verify this server. Windows System Proxy remains under explicit control in Settings.";
+            Notice = InternetVerified ? "HTTPS verified through the selected server. System Proxy can be enabled in Settings." : "Local proxy ready; internet access could not be verified. Retry the HTTPS test.";
         }
-        finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; RefreshState(); Raise(nameof(ActiveServer)); }
+        finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; RefreshState(); RefreshLibrary(); }
     }
     private async Task DisconnectAsync()
     {
-        networkCancellation?.Cancel();
+        networkCancellation?.Cancel(); ipCancellation?.Cancel(); PublicIp = "—";
         if (connectOperation != null) { try { await connectOperation; } catch { } }
         // Restore the approved settings before stopping the listener.
         try { Notice = await proxy.RestoreAsync(); }
@@ -220,9 +235,24 @@ public sealed partial class ShellViewModel : ObservableObject
     }
     private async Task ProbeAsync()
     {
-        var result = await backend.ProbeAsync(networkCancellation?.Token ?? CancellationToken.None); connection.RecordProbe(result);
-        Latency = result.Milliseconds is long ms ? $"{ms} ms" : "—";
-        Notice = result.Message; PublicIp = "—"; if (result.Success && backend.Port is int port) { var ip = await AJ.VPN.Infrastructure.PublicExitIp.FetchAsync(port, networkCancellation?.Token ?? CancellationToken.None); if (State == ConnectionState.Connected && backend.Port == port) PublicIp = ip ?? "—"; } RefreshState();
+        if (State != ConnectionState.Connected || backend.Port is not int port) return;
+        ipCancellation?.Cancel();
+        using var operation = CancellationTokenSource.CreateLinkedTokenSource(networkCancellation?.Token ?? CancellationToken.None);
+        ipCancellation = operation;
+        PublicIp = "—";
+        try {
+            var result = await backend.ProbeAsync(operation.Token);
+            if (State != ConnectionState.Connected || backend.Port != port || operation.IsCancellationRequested) return;
+            connection.RecordProbe(result);
+            Latency = result.Success && result.Milliseconds is long ms ? $"{ms} ms" : "—";
+            if (library.Active is { } active) pings[active.Server.Id] = result.Success ? Latency : "Unavailable"; RefreshPremiumLibrary();
+            Notice = result.Message; RefreshState();
+            if (result.Success) {
+                var ip = backend.PublicExitAddress;
+                if (State == ConnectionState.Connected && backend.Port == port && !operation.IsCancellationRequested) PublicIp = ip ?? "—";
+            }
+        }
+        finally { if (ReferenceEquals(ipCancellation, operation)) ipCancellation = null; }
     }
     private async Task ApplyProxyAsync()
     {
@@ -231,7 +261,7 @@ public sealed partial class ShellViewModel : ObservableObject
         await proxy.ApplyAsync(port, true);
         // Recheck after asynchronous journal persistence in case the core exited during approval/apply.
         if (backend.Port != port || State != ConnectionState.Connected) Notice = await proxy.RestoreAsync();
-        else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings.";
+        else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings."; Raise(nameof(ConnectionMode));
     }
     private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD · Windows System Proxy", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
     public async Task ShutdownAsync() { await DisconnectAsync(); }
@@ -239,6 +269,7 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         Notice = _ switch
         {
+            CoreCompatibilityException compatibility => compatibility.Message,
             OperationCanceledException => "Operation cancelled or timed out. No successful connection was recorded.",
             System.Security.Cryptography.CryptographicException => "Windows could not decrypt the local library. Existing encrypted data was preserved.",
             System.Net.Http.HttpRequestException => "HTTPS subscription download failed. Check the URL, public host and TLS certificate. Existing servers were preserved.",
@@ -249,4 +280,3 @@ public sealed partial class ShellViewModel : ObservableObject
         logger.LogError(new EventId(500), "Operation failed");
     }
 }
-

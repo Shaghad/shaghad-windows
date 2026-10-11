@@ -16,6 +16,7 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         finally { gate.Release(); }
     }
     public SavedProfile? Active => Current.Profiles.Find(p => p.Server.Id == Current.ActiveId);
+    public string? CoreCompatibilityError(SavedProfile profile, CoreKind kind) => validator.CoreCompatibilityError(profile.ShareUri, kind);
     public IReadOnlyList<SavedProfile> Parse(string input, string? subscriptionId = null, CancellationToken token = default)
     {
         if (input.Length > 2_000_000) throw new InvalidDataException("Profile input exceeds the size limit.");
@@ -44,16 +45,26 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         {
             var profiles = l.Profiles.Concat(added.Where(a => !l.Profiles.Any(p => p.ShareUri == a.ShareUri))).ToList();
             if (profiles.Count > 5000) throw new InvalidDataException("The server library is full.");
-            return l with { Profiles = profiles, ActiveId = l.ActiveId ?? profiles[0].Server.Id };
+            return l with { Profiles = profiles, ActiveId = l.ActiveId ?? profiles.FirstOrDefault(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null)?.Server.Id };
         }, token);
     }
     public Task SelectAsync(string id, CancellationToken token = default) => MutateAsync(l =>
-        l.Profiles.Any(p => p.Server.Id == id) ? l with { ActiveId = id } : throw new InvalidDataException("Select an imported server."), token);
-    public Task SetCoreAsync(CoreKind kind, CancellationToken token = default) => MutateAsync(l => l with { Core = kind }, token);
+    {
+        var profile = l.Profiles.Find(p => p.Server.Id == id) ?? throw new InvalidDataException("Select an imported server.");
+        if (validator.CoreCompatibilityError(profile.ShareUri, l.Core) is string error) throw new CoreCompatibilityException(error);
+        return l with { ActiveId = id };
+    }, token);
+    public Task SetCoreAsync(CoreKind kind, CancellationToken token = default) => MutateAsync(l =>
+    {
+        if (!Enum.IsDefined(kind)) throw new CoreCompatibilityException("Select a supported core.");
+        var active = l.Profiles.Find(p => p.Server.Id == l.ActiveId);
+        if (active != null && validator.CoreCompatibilityError(active.ShareUri, kind) is string error) throw new CoreCompatibilityException(error);
+        return l with { Core = kind };
+    }, token);
     public Task RemoveProfileAsync(string id, CancellationToken token = default) => MutateAsync(l =>
     {
         var profiles = l.Profiles.Where(p => p.Server.Id != id).ToList();
-        return l with { Profiles = profiles, ActiveId = l.ActiveId == id ? profiles.FirstOrDefault()?.Server.Id : l.ActiveId };
+        return l with { Profiles = profiles, ActiveId = l.ActiveId == id ? profiles.FirstOrDefault(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null)?.Server.Id : l.ActiveId };
     }, token);
     public Task AddSubscriptionAsync(string name, string url, CancellationToken token = default)
     {
@@ -67,13 +78,14 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100) throw new InvalidDataException("Invalid subscription name.");
         ValidateSubscriptionUrl(url);
         return MutateAsync(l => l.Subscriptions.Any(s => s.Id == id)
-            ? l with { Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { Name = name.Trim(), Url = url.Trim() } : s).ToList() }
+            ? l with { Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { Name = name.Trim(), Url = url.Trim(), UpdatedAt = s.Url == url.Trim() ? s.UpdatedAt : null, RemainingBytes = s.Url == url.Trim() ? s.RemainingBytes : null, ExpiresAt = s.Url == url.Trim() ? s.ExpiresAt : null } : s).ToList() }
             : throw new InvalidDataException("Select a subscription."), token);
     }
     public async Task UpdateSubscriptionAsync(string id, CancellationToken token = default)
     {
         var sub = Current.Subscriptions.Find(s => s.Id == id) ?? throw new InvalidDataException("Select a subscription.");
-        var input = await downloader.DownloadAsync(sub.Url, token);
+        var download = downloader is ISubscriptionMetadataDownloader metadata ? await metadata.DownloadWithMetadataAsync(sub.Url, token) : new SubscriptionDownload(await downloader.DownloadAsync(sub.Url, token));
+        var input = download.Content;
         var added = await Task.Run(() => Parse(input, id, token), token);
         await MutateAsync(l =>
         {
@@ -82,15 +94,16 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
             if (profiles.Count > 5000) throw new InvalidDataException("The server library is full.");
             // Preserve selection when the same share link survives an update.
             var selectedUri = l.Profiles.Find(p => p.Server.Id == l.ActiveId)?.ShareUri;
-            return l with { Profiles = profiles, ActiveId = profiles.Find(p => p.ShareUri == selectedUri)?.Server.Id ?? profiles.FirstOrDefault()?.Server.Id,
-                Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { UpdatedAt = DateTimeOffset.UtcNow } : s).ToList() };
+            var compatible = profiles.Where(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null).ToList();
+            return l with { Profiles = profiles, ActiveId = compatible.Find(p => p.ShareUri == selectedUri)?.Server.Id ?? compatible.FirstOrDefault()?.Server.Id,
+                Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { UpdatedAt = DateTimeOffset.UtcNow, RemainingBytes = download.RemainingBytes, ExpiresAt = download.ExpiresAt } : s).ToList() };
         }, token);
     }
     public Task RemoveSubscriptionAsync(string id, CancellationToken token = default) => MutateAsync(l =>
     {
         var profiles = l.Profiles.Where(p => p.SubscriptionId != id).ToList();
         return l with { Subscriptions = l.Subscriptions.Where(s => s.Id != id).ToList(), Profiles = profiles,
-            ActiveId = profiles.Any(p => p.Server.Id == l.ActiveId) ? l.ActiveId : profiles.FirstOrDefault()?.Server.Id };
+            ActiveId = profiles.Any(p => p.Server.Id == l.ActiveId) ? l.ActiveId : profiles.FirstOrDefault(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null)?.Server.Id };
     }, token);
     public static Uri ValidateSubscriptionUrl(string url)
     {
@@ -111,4 +124,3 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         finally { gate.Release(); }
     }
 }
-

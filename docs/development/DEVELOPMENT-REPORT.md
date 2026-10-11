@@ -1,3 +1,38 @@
+# Phase 3 completion work — 2026-10-11
+
+## Root cause and fix
+
+The supplied authorized VLESS profiles require Xray's ML-KEM VLESS Encryption. Xray generation preserves it, whereas upstream sing-box generation omitted that requirement and emitted ordinary VLESS. Local core readiness and native JSON validity therefore appeared successful while remote requests failed. The caller's secure-handshake error did not establish a bad target certificate. A tested HTTPUpgrade Host normalization did not solve the issue and was removed.
+
+SHAGHAD now supports these same profiles through Xray with original security parameters intact. A core compatibility check blocks sing-box assignment/generation and explains that Xray is required. It also rejects unsupported XHTTP/KCP, raw HTTP obfuscation substitutions, adapter gRPC authority/mode loss and external-plugin requirements. Vision flow must have an appropriate transport/security combination. Library imports retain incompatible profiles without activating them on the wrong core; rejected assignments preserve the previous snapshot. No upstream code or core executable was changed.
+
+## Diagnostics and stability
+
+Diagnostics now shows core status, PID-owned local proxy status, last measured remote HTTPS result, certificate validation status, bounded DNS claims, measured public exit IP, measured HTTPS request time and a sanitized last connection error. Measurements clear on disconnect/core exit; public IP is never included in test logs. Run Checks reads current state; the explicit HTTPS test performs networking. Core output is inspected only in bounded memory to classify fixed failure categories; raw output, URLs, UUIDs and key material are not persisted.
+
+Crash handling cleans the dead owned process and invalidates internet readiness. A generation check prevents a delayed exit notification from corrupting a later connection. Explicit retry cleans stale resources before startup. Native and real-profile tests verify cancellation, deliberate core crash, resource cleanup and manual reconnect. No automatic server selection or failover was added.
+
+## Verified outcome
+
+- Final Release build: zero warnings/errors; **92 automated tests passed** (3 unit, 89 integration).
+- **23 native checks passed** on Xray 26.3.27 and sing-box 1.14.3; synthetic fixture coverage is distinguished from remote protocol coverage.
+- Authorized Xray VLESS representatives using HTTPUpgrade, WS, raw TCP and XHTTP passed real HTTP, TLS-verified HTTPS and IPv4 via both HTTP proxy and SOCKS5. XHTTP also passed IPv6. Six IPv6 endpoint attempts on the other representatives failed with unconfirmed causes.
+- The original Xray profile remained functional after manual retry and deliberate owned-core crash/restart. Real bootstrap DNS succeeded; loopback tests confirmed target-domain proxy forwarding. An untrusted target TLS certificate was rejected in a controlled integration fixture.
+- WPF smoke checks passed eight pages and 32 layout combinations with isolated preferences. Small current UI build blockers were repaired without replacing the ongoing branding/UI work.
+- GitHub authentication, repository identity and push permission were verified read-only. No publication occurred. Current text and relevant reachable Git history were scanned with values suppressed; findings were reviewed as synthetic fixtures/scanner expressions/public references.
+
+## Preserved scope and open validation
+
+Existing architecture, branding, encrypted storage, normal user library and Git history were preserved. No WinINet, WinHTTP, system DNS, routes, TUN or Auto Failover changes were performed. A separate explicit-approval WinINet procedure is prepared, not executed.
+
+The pinned sing-box cannot run these ML-KEM profiles; SHAGHAD routes their use through explicitly selected Xray rather than weakening encryption. No compatible authorized sing-box profile or real VMess/Trojan/Shadowsocks profile was supplied. Packet-level DNS leaks, sustained stability, other TLS/REALITY combinations and live Windows proxy/browser behavior remain unverified. Full Phase 3 production readiness is not claimed.
+
+Details and evidence: `docs/testing/VALIDATION.md`, `docs/testing/SINGBOX-COMPATIBILITY.md`, `docs/testing/CONNECTIVITY-MATRIX.md`, `docs/testing/WININET-INTERACTIVE-VALIDATION.md`.
+
+## Historical initial Phase 3 result
+
+The report below is retained as history; its pending retry/authentication statements are superseded above.
+
 ## Phase 3 — Current result, 2026-10-11
 
 Continued the existing solution and preserved upstream source and uncommitted Phase 2 work. Added a reusable HTTPS probe supporting HTTP CONNECT and SOCKS5, sanitized TLS/DNS/tunnel/connection/timeout troubleshooting, metadata-only probe events and seven regression cases. Added an explicit --production-connectivity-test request-file output-directory mode using the existing subscription downloader, encrypted isolated library, trusted cores and owned-process cleanup. Credential-bearing request files belong only in ignored private storage; results contain no profile payloads. Manual retry recovery is implemented but its final harness run is pending.

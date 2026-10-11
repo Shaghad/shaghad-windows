@@ -14,6 +14,7 @@ public sealed class ServiceLibConfigurationGenerator(IProfileValidator validator
     public string Generate(SavedProfile profile, CoreKind kind, int port)
     {
         if (port is < 1024 or > 65535 || !validator.Validate(profile.ShareUri).IsValid) throw new InvalidDataException("The saved profile is invalid.");
+        if (validator.CoreCompatibilityError(profile.ShareUri, kind) is string compatibilityError) throw new CoreCompatibilityException(compatibilityError);
         var node = FmtHandler.ResolveConfig(profile.ShareUri, out _) ?? throw new InvalidDataException("Profile parsing failed.");
         var core = kind == CoreKind.Xray ? ECoreType.Xray : ECoreType.sing_box;
         node.CoreType = core;

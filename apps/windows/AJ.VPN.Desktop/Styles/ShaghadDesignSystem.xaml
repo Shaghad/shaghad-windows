@@ -27,7 +27,7 @@
   </Style.Triggers>
  </Style>
  <Style x:Key="ShaghadButton" TargetType="Button">
-  <Setter Property="Padding" Value="14,6"/><Setter Property="Margin" Value="0,2,8,2"/><Setter Property="MinHeight" Value="38"/>
+  <Setter Property="Padding" Value="14,6"/><Setter Property="Margin" Value="0,2,8,2"/><Setter Property="MinHeight" Value="36"/>
   <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/><Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
    <Border x:Name="Chrome" CornerRadius="10" Padding="{TemplateBinding Padding}" BorderThickness="1" BorderBrush="{DynamicResource InputBorderBrush}" Background="{TemplateBinding Background}">
@@ -36,19 +36,19 @@
    <ControlTemplate.Triggers>
     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/></Trigger>
     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"/><Setter TargetName="Chrome" Property="BorderThickness" Value="3"/></Trigger>
-    <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/></Trigger>
+    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/></Trigger>
     <Trigger Property="IsPressed" Value="True"><Setter Property="Opacity" Value="0.8"/></Trigger>
    </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>
  </Style>
  <Style TargetType="Button" BasedOn="{StaticResource ShaghadButton}"/>
  <Style x:Key="ShaghadPrimaryButton" TargetType="Button" BasedOn="{StaticResource ShaghadButton}"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/></Style>
- <Style x:Key="ShaghadNavigationItem" TargetType="RadioButton">
+ <Style x:Key="ShaghadNavigationItem" TargetType="RadioButton"><Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
   <Setter Property="Padding" Value="{DynamicResource NavigationPadding}"/><Setter Property="Margin" Value="0,1"/><Setter Property="MinHeight" Value="{DynamicResource NavigationMinHeight}"/>
   <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
    <Border x:Name="Chrome" CornerRadius="10" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="2">
-    <DockPanel FlowDirection="LeftToRight"><TextBlock DockPanel.Dock="Left" Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" Margin="0,0,12,0" VerticalAlignment="Center"/><ContentPresenter HorizontalAlignment="{DynamicResource ContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True" FlowDirection="{DynamicResource ContentFlowDirection}"/></DockPanel>
+    <DockPanel FlowDirection="LeftToRight"><TextBlock DockPanel.Dock="Left" Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" Margin="{DynamicResource NavigationIconMargin}" VerticalAlignment="Center"/><ContentPresenter Visibility="{DynamicResource NavigationContentVisibility}" HorizontalAlignment="{DynamicResource ContentAlignment}" VerticalAlignment="Center" RecognizesAccessKey="True" FlowDirection="{DynamicResource ContentFlowDirection}"/></DockPanel>
    </Border>
    <ControlTemplate.Triggers>
     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrush}"/><Setter Property="Foreground" Value="{DynamicResource TextBrush}"/></Trigger>
@@ -73,6 +73,25 @@
      <Track.IncreaseRepeatButton><RepeatButton Command="ScrollBar.PageDownCommand" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
     </Track>
    </Grid>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style x:Key="SubscriptionManagerRow" TargetType="ListBoxItem">
+  <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Margin" Value="6"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="Row" Background="{DynamicResource SurfaceBrush}" BorderBrush="Transparent" BorderThickness="3,1,1,1" CornerRadius="8" Padding="4"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/><Setter TargetName="Row" Property="Background" Value="{DynamicResource StatusSurfaceBrush}"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="{DynamicResource StatusSurfaceBrush}"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style TargetType="ListViewItem">
+  <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+  <Setter Property="MinHeight" Value="38"/>
+  <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListViewItem">
+   <Border x:Name="Row" Background="Transparent" BorderBrush="Transparent" BorderThickness="3,1,1,1" Padding="6,6">
+    <GridViewRowPresenter Content="{TemplateBinding Content}" Columns="{Binding View.Columns, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+   </Border>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="{DynamicResource StatusSurfaceBrush}"/></Trigger>
+    <Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="{DynamicResource StatusSurfaceBrush}"/><Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/></Trigger>
+    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/></Trigger>
+   </ControlTemplate.Triggers>
   </ControlTemplate></Setter.Value></Setter>
  </Style>
 </ResourceDictionary>

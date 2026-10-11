@@ -4,7 +4,7 @@ using AJ.VPN.Application;
 
 namespace AJ.VPN.Infrastructure;
 
-public sealed class SubscriptionDownloader : ISubscriptionDownloader
+public sealed class SubscriptionDownloader : ISubscriptionMetadataDownloader
 {
     public static bool IsPublicAddress(IPAddress address)
     {
@@ -20,7 +20,30 @@ public sealed class SubscriptionDownloader : ISubscriptionDownloader
         return (b[0] & 0xe0) == 0x20 && !(b[0] == 0x20 && b[1] == 1 && (b[2] < 2 || (b[2] == 0x0d && b[3] == 0xb8))) &&
             !(b[0] == 0x20 && b[1] == 2);
     }
-    public async Task<string> DownloadAsync(string url, CancellationToken cancellationToken = default)
+    public async Task<string> DownloadAsync(string url, CancellationToken cancellationToken = default) =>
+        (await DownloadWithMetadataAsync(url, cancellationToken)).Content;
+
+    public static (long? Remaining, DateTimeOffset? Expires) ParseUsage(string? header)
+    {
+        if (string.IsNullOrWhiteSpace(header) || header.Length > 1024) return (null, null);
+        var values = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in header.Split(';')) {
+            var pair = item.Trim().Split('=', 2);
+            if (pair.Length == 2 && long.TryParse(pair[1], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var value))
+                values.TryAdd(pair[0].Trim(), value);
+        }
+        long? remaining = null;
+        if (values.TryGetValue("total", out var total) && total > 0 && values.TryGetValue("upload", out var upload) && values.TryGetValue("download", out var download)) {
+            // Subtract in decimal to avoid overflow from an untrusted provider header.
+            remaining = (long)Math.Max(0m, (decimal)total - upload - download);
+        }
+        DateTimeOffset? expires = null;
+        if (values.TryGetValue("expire", out var timestamp) && timestamp > 0) {
+            try { expires = DateTimeOffset.FromUnixTimeSeconds(timestamp); } catch (ArgumentOutOfRangeException) { }
+        }
+        return (remaining, expires);
+    }
+    public async Task<AJ.VPN.Domain.SubscriptionDownload> DownloadWithMetadataAsync(string url, CancellationToken cancellationToken = default)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(25));
@@ -66,7 +89,8 @@ public sealed class SubscriptionDownloader : ISubscriptionDownloader
                 if (buffer.Length + count > 2_000_000) throw new InvalidDataException("Subscription exceeds the size limit.");
                 buffer.Write(chunk, 0, count);
             }
-            return System.Text.Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length);
+            var usage = ParseUsage(response.Headers.TryGetValues("subscription-userinfo", out var headers) ? headers.FirstOrDefault() : null);
+            return new(System.Text.Encoding.UTF8.GetString(buffer.GetBuffer(), 0, (int)buffer.Length), usage.Remaining, usage.Expires);
         }
         throw new InvalidDataException("Subscription download failed.");
     }

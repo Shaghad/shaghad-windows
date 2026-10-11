@@ -3,7 +3,7 @@
  <sys:String x:Key="Subscriptions">Subscriptions</sys:String><sys:String x:Key="Routing">Routing</sys:String>
  <sys:String x:Key="Statistics">Statistics</sys:String><sys:String x:Key="Diagnostics">Diagnostics</sys:String>
  <sys:String x:Key="Settings">Settings</sys:String><sys:String x:Key="Exit">Exit</sys:String>
- <sys:String x:Key="Disconnected">Disconnected</sys:String><sys:String x:Key="Connect">Start proxy</sys:String>
+ <sys:String x:Key="Disconnected">Disconnected</sys:String><sys:String x:Key="Connect">Connect</sys:String>
  <sys:String x:Key="Welcome">Your connection, clearly in view.</sys:String>
  <sys:String x:Key="ImportServer">Add a server</sys:String>
  <sys:String x:Key="DashboardSetupHint">Add your server to get started.</sys:String>
@@ -18,7 +18,7 @@
  <sys:String x:Key="InternetVerified">HTTPS access verified</sys:String>
  <sys:String x:Key="FoundationNotice">Phase 2 · Local proxy mode · Windows proxy changes require your approval · TUN unavailable</sys:String>
  <sys:String x:Key="SelectedServer">Selected server</sys:String><sys:String x:Key="NoServer">No server selected</sys:String>
- <sys:String x:Key="NoMetrics">Public IP and traffic counters are not collected in this phase. Latency is an explicit HTTPS request through the active proxy.</sys:String>
+ <sys:String x:Key="NoMetrics">Traffic counters are not available from the core. Public exit IP is measured through the active proxy on the Dashboard. Latency is an explicit HTTPS request through the active proxy.</sys:String>
  <sys:String x:Key="CoreNotice">HTTP / SOCKS5 loopback proxy · no TUN</sys:String>
  <sys:String x:Key="Preview">Import server profiles</sys:String><sys:String x:Key="Validate">Validate and import</sys:String>
  <sys:String x:Key="PreviewNotice">VLESS, VMess, Trojan and Shadowsocks share links, one per line. Profiles are encrypted for this Windows user. Input is cleared after import.</sys:String>
@@ -43,12 +43,47 @@
  <sys:String x:Key="ApplicationVersion">Application version</sys:String>
  <sys:String x:Key="CoreVersion">Core version</sys:String>
  <sys:String x:Key="CoreNotInstalled">Not checked</sys:String>
- <sys:String x:Key="Disconnect">Stop / cancel</sys:String><sys:String x:Key="TestProxy">Test HTTPS / latency</sys:String>
+ <sys:String x:Key="Disconnect">Disconnect</sys:String><sys:String x:Key="TestProxy">Test HTTPS / latency</sys:String>
  <sys:String x:Key="ClipboardImport">Import clipboard</sys:String><sys:String x:Key="SelectServer">Use selected server</sys:String><sys:String x:Key="Remove">Remove selected</sys:String>
- <sys:String x:Key="SubscriptionName">Subscription name</sys:String><sys:String x:Key="AddSubscription">Save subscription</sys:String><sys:String x:Key="UpdateSubscription">Update selected</sys:String>
+ <sys:String x:Key="SubscriptionName">Subscription name</sys:String><sys:String x:Key="AddSubscription">Add subscription</sys:String><sys:String x:Key="UpdateSubscription">Update selected</sys:String>
  <sys:String x:Key="SystemProxyTitle">Windows System Proxy</sys:String><sys:String x:Key="SystemProxyNotice">Apply requires confirmation. Previous manual, PAC and discovery settings are preserved in an encrypted recovery journal. Changes made by other applications are preserved.</sys:String>
  <sys:String x:Key="ApplyProxy">Apply with confirmation</sys:String><sys:String x:Key="RestoreProxy">Restore / recover</sys:String><sys:String x:Key="CheckCores">Verify installed cores</sys:String>
  <sys:String x:Key="GitHubRepository">GitHub repository</sys:String>
  <sys:String x:Key="OpenLicenses">Open-source licenses</sys:String>
  <sys:String x:Key="Attribution">SHAGHAD is an independent application using v2rayN ServiceLib 7.25.4, © 2dust and contributors, under GPL v3. No warranty. SHAGHAD is not an official v2rayN or Hiddify product. Vazirmatn © The Vazirmatn Project Authors, SIL OFL 1.1. Full dependency notices accompany development builds.</sys:String>
+<sys:String x:Key="SystemProxyMode">Connection mode · System Proxy</sys:String>
+<sys:String x:Key="EditLabel">Edit</sys:String>
+<sys:String x:Key="EmptyServerManager">Your server library is empty. Add a share link or import from the clipboard to get started.</sys:String>
+<sys:String x:Key="UpdateAllLabel">Update all</sys:String>
+<sys:String x:Key="CopyIp">Copy IP</sys:String>
+<sys:String x:Key="CloseEditor">Done</sys:String>
+<sys:String x:Key="UnknownLocation">Location unavailable</sys:String>
+<sys:String x:Key="DurationLabel">Duration</sys:String>
+<sys:String x:Key="UploadLabel">Upload</sys:String>
+<sys:String x:Key="SubscriptionManagerHint">Manage your saved subscriptions. Traffic and expiration appear only when supplied by the provider.</sys:String>
+<sys:String x:Key="TestAllLabel">Test all</sys:String>
+<sys:String x:Key="ExitIpLabel">Proxied exit IP</sys:String>
+<sys:String x:Key="CoreReadyLabel">Proxy ready · unverified</sys:String>
+<sys:String x:Key="ActiveLabel">Selected</sys:String>
+<sys:String x:Key="DownloadLabel">Download</sys:String>
+<sys:String x:Key="UnavailableMetric">Not available from core</sys:String>
+<sys:String x:Key="LocalProxyMode">Connection mode · Local proxy</sys:String>
+<sys:String x:Key="EmptySubscriptionManager">No subscriptions yet. Add a provider URL to keep your server library up to date.</sys:String>
+<sys:String x:Key="SearchLabel">Search</sys:String>
+<sys:String x:Key="NameLabel">Name</sys:String>
+<sys:String x:Key="CountryLabel">Country</sys:String>
+<sys:String x:Key="ProtocolLabel">Protocol</sys:String>
+<sys:String x:Key="PingLabel">Ping</sys:String>
+<sys:String x:Key="StatusLabel">Status</sys:String>
+<sys:String x:Key="SelectionLabel">Selection</sys:String>
+<sys:String x:Key="NotTestedLabel">Not tested</sys:String>
+<sys:String x:Key="UnavailableLabel">Unavailable</sys:String>
+<sys:String x:Key="RemainingLabel">Remaining</sys:String>
+<sys:String x:Key="ExpiresLabel">Expires</sys:String>
+<sys:String x:Key="ProviderLabel">provider</sys:String>
+<sys:String x:Key="UpdatedLabel">Updated</sys:String>
+<sys:String x:Key="NotUpdatedLabel">Not updated</sys:String>
+<sys:String x:Key="SortNameLabel">Name ↑</sys:String>
+<sys:String x:Key="SortProtocolLabel">Protocol ↑</sys:String>
 </ResourceDictionary>
+

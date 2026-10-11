@@ -8,6 +8,7 @@ namespace AJ.VPN.Desktop.ViewModels;
 
 public sealed partial class ShellViewModel
 {
+    private CancellationTokenSource? ipCancellation;
     private string publicIp = "—", search = "";
     private DateTimeOffset? connectedAt;
     private readonly Dictionary<string, string> pings = [];
@@ -15,6 +16,7 @@ public sealed partial class ShellViewModel
     public string? EditingSubscriptionId { get; set; }
     public string PublicIp { get => publicIp; private set { Set(ref publicIp, value); Raise(nameof(HasPublicIp)); } }
     public bool HasPublicIp => PublicIp != "—";
+    public bool NeedsSubscription => Subscriptions.Count == 0;
     public bool NeedsServer => !HasActiveProfile;
     public bool CanProbe => State == ConnectionState.Connected && !Busy;
     public string ConsumerStatus => State == ConnectionState.Connected
@@ -33,15 +35,16 @@ public sealed partial class ShellViewModel
     public ICommand TestAllCommand { get; private set; } = null!;
     public ICommand UpdateAllCommand { get; private set; } = null!;
 
+    public void PrepareImport() { ProfileInput = ""; ProfileResult = ""; }
     private void InitializePremium()
     {
-        ServerView = CollectionViewSource.GetDefaultView(Servers);
-        ServerView.Filter = item => item is SavedProfile p && (p.Server.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)
+        ServerView = CollectionViewSource.GetDefaultView(ServerRows);
+        ServerView.Filter = item => item is ServerRow p && (p.Server.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)
             || p.Server.Protocol.Contains(Search, StringComparison.OrdinalIgnoreCase) || (p.Server.Country?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false));
         CopyIpCommand = new RelayCommand(_ => { if (HasPublicIp) System.Windows.Clipboard.SetText(PublicIp); });
-        SortServersCommand = new RelayCommand(_ => {
+        SortServersCommand = new RelayCommand(field => {
             ServerView.SortDescriptions.Clear();
-            ServerView.SortDescriptions.Add(new("Server.Name", ListSortDirection.Ascending));
+            ServerView.SortDescriptions.Add(new(field?.ToString() ?? "Server.Name", ListSortDirection.Ascending));
         });
         ConnectSelectedCommand = new AsyncCommand(async () => {
             if (SelectedServer == null) return;
@@ -57,16 +60,22 @@ public sealed partial class ShellViewModel
         durationTimer.Tick += (_, _) => Raise(nameof(Duration));
         durationTimer.Start();
     }
+    public ObservableCollection<ServerRow> ServerRows { get; } = [];
+    public ObservableCollection<SubscriptionRow> SubscriptionRows { get; } = [];
+    public ServerRow? SelectedServerRow { get => ServerRows.FirstOrDefault(r => r.Profile == SelectedServer); set { if (value != null) SelectedServer = value.Profile; Raise(); } }
+    public SubscriptionRow? SelectedSubscriptionRow { get => SubscriptionRows.FirstOrDefault(r => r.Source == SelectedSubscription); set { if (value != null) SelectedSubscription = value.Source; Raise(); } }
     private void RefreshPremiumLibrary()
     {
-        foreach (var p in Servers) {
+        ServerRows.Clear(); foreach (var profile in Servers) ServerRows.Add(new(profile));
+        foreach (var p in ServerRows) {
             p.SelectionDisplay = p.Server.Id == library.Current.ActiveId ? Resource("ActiveLabel") : "—";
             p.PingDisplay = pings.GetValueOrDefault(p.Server.Id, "—");
         }
-        foreach (var sub in library.Current.Subscriptions) {
-            sub.Summary = $"{library.Current.Profiles.Count(p => p.SubscriptionId == sub.Id)} servers · Traffic / expiration: unavailable";
+        SubscriptionRows.Clear(); foreach (var source in Subscriptions) SubscriptionRows.Add(new(source));
+        foreach (var sub in SubscriptionRows) {
+            sub.Summary = $"{library.Current.Profiles.Count(p => p.SubscriptionId == sub.Id)} {Resource("Servers")} · " + sub.UsageDisplay;
         }
-        ServerView.Refresh();
+        Raise(nameof(NeedsSubscription)); Raise(nameof(SelectedServerRow)); Raise(nameof(SelectedSubscriptionRow)); ServerView.Refresh();
     }
     private async Task TestAllAsync()
     {
@@ -92,4 +101,25 @@ public sealed partial class ShellViewModel
             Busy = false; networkCancellation.Dispose(); networkCancellation = null; RefreshLibrary(); RefreshState();
         }
     }
+}
+
+public sealed class ServerRow(SavedProfile profile)
+{
+    private static string Text(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
+    public SavedProfile Profile => profile;
+    public Server Server => profile.Server;
+    public string StatusDisplay => Text(PingDisplay == "—" ? "NotTestedLabel" : PingDisplay == "Unavailable" ? "UnavailableLabel" : "InternetVerified");
+    public string CountryDisplay => Server.Country ?? Text("UnavailableLabel");
+    public string PingDisplay { get; set; } = "—";
+    public string SelectionDisplay { get; set; } = "—";
+}
+public sealed class SubscriptionRow(Subscription source)
+{
+    private static string Text(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
+    public Subscription Source => source;
+    public string Id => source.Id;
+    public string Name => source.Name;
+    public string Summary { get; set; } = "";
+    public string UsageDisplay => $"{Text("RemainingLabel")}: {(source.RemainingBytes is long bytes ? $"{bytes / 1073741824d:0.##} GB ({Text("ProviderLabel")})" : Text("UnavailableLabel"))} · {Text("ExpiresLabel")}: {(source.ExpiresAt is { } expires ? expires.ToLocalTime().ToString("g") : Text("UnavailableLabel"))}";
+    public string UpdateDisplay => source.UpdatedAt is { } time ? $"{Text("UpdatedLabel")} {time.ToLocalTime():g}" : Text("NotUpdatedLabel");
 }

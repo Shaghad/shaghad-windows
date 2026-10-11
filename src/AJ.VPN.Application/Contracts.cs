@@ -14,6 +14,7 @@ public interface IDiagnosticsService
 public interface IProfileValidator
 {
     ProfileValidation Validate(string input);
+    string? CoreCompatibilityError(string input, CoreKind kind) => null;
 }
 public interface ICoreBackend
 {
@@ -38,10 +39,18 @@ public interface ILocalProxyBackend : ICoreBackend
 {
     int? Port { get; }
     string Version { get; }
+    ProxyProbe? LastProbe => null;
+    string? LastError => null;
+    string? PublicExitAddress => null;
     event EventHandler? UnexpectedExit;
     Task<ProxyProbe> ProbeAsync(CancellationToken cancellationToken = default);
 }
 public interface ISubscriptionDownloader
 {
     Task<string> DownloadAsync(string url, CancellationToken cancellationToken = default);
+}
+
+public interface ISubscriptionMetadataDownloader : ISubscriptionDownloader
+{
+    Task<SubscriptionDownload> DownloadWithMetadataAsync(string url, CancellationToken cancellationToken = default);
 }

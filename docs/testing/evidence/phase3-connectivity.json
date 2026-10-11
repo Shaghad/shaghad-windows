@@ -1,0 +1,472 @@
+{
+  "results": [
+    {
+      "core": "Xray",
+      "transport": "httpupgrade",
+      "check": "local server bootstrap DNS",
+      "passed": true,
+      "ipv4Answers": 1,
+      "ipv6Answers": 0
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "core startup",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "HTTP proxy HTTPS",
+      "passed": true,
+      "Milliseconds": 1597,
+      "Message": "TLS-verified HTTPS response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "HTTP proxy HTTP",
+      "passed": true,
+      "Milliseconds": 224,
+      "Message": "Plain HTTP response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "HTTP proxy IPv4",
+      "passed": true,
+      "Milliseconds": 430,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "HTTP proxy IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "SOCKS5 HTTPS",
+      "passed": true,
+      "Milliseconds": 745,
+      "Message": "TLS-verified HTTPS response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "SOCKS5 HTTP",
+      "passed": true,
+      "Milliseconds": 229,
+      "Message": "Plain HTTP response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "SOCKS5 IPv4",
+      "passed": true,
+      "Milliseconds": 422,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "SOCKS5 IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "core shutdown",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "transport": "ws",
+      "check": "local server bootstrap DNS",
+      "passed": true,
+      "ipv4Answers": 1,
+      "ipv6Answers": 0
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "core startup",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "HTTP proxy HTTPS",
+      "passed": true,
+      "Milliseconds": 698,
+      "Message": "TLS-verified HTTPS response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "HTTP proxy HTTP",
+      "passed": true,
+      "Milliseconds": 561,
+      "Message": "Plain HTTP response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "HTTP proxy IPv4",
+      "passed": true,
+      "Milliseconds": 1707,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "HTTP proxy IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "SOCKS5 HTTPS",
+      "passed": true,
+      "Milliseconds": 617,
+      "Message": "TLS-verified HTTPS response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "SOCKS5 HTTP",
+      "passed": true,
+      "Milliseconds": 447,
+      "Message": "Plain HTTP response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "SOCKS5 IPv4",
+      "passed": true,
+      "Milliseconds": 890,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "SOCKS5 IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": "Core reported an unclassified error"
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "core shutdown",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "transport": "raw",
+      "check": "local server bootstrap DNS",
+      "passed": true,
+      "ipv4Answers": 1,
+      "ipv6Answers": 0
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "core startup",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "HTTP proxy HTTPS",
+      "passed": true,
+      "Milliseconds": 553,
+      "Message": "TLS-verified HTTPS response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "HTTP proxy HTTP",
+      "passed": true,
+      "Milliseconds": 348,
+      "Message": "Plain HTTP response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "HTTP proxy IPv4",
+      "passed": true,
+      "Milliseconds": 663,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "HTTP proxy IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "SOCKS5 HTTPS",
+      "passed": true,
+      "Milliseconds": 456,
+      "Message": "TLS-verified HTTPS response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "SOCKS5 HTTP",
+      "passed": true,
+      "Milliseconds": 332,
+      "Message": "Plain HTTP response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "SOCKS5 IPv4",
+      "passed": true,
+      "Milliseconds": 578,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "SOCKS5 IPv6",
+      "passed": false,
+      "Milliseconds": null,
+      "Message": "TLS verification failed or the secure handshake was interrupted. Check certificate trust, system clock and server transport; certificate validation remains enabled. Failure category: SecureConnectionError; nested type: IOException.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "core shutdown",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "transport": "xhttp",
+      "check": "local server bootstrap DNS",
+      "passed": true,
+      "ipv4Answers": 1,
+      "ipv6Answers": 0
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "core startup",
+      "passed": true
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "HTTP proxy HTTPS",
+      "passed": true,
+      "Milliseconds": 663,
+      "Message": "TLS-verified HTTPS response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "HTTP proxy HTTP",
+      "passed": true,
+      "Milliseconds": 353,
+      "Message": "Plain HTTP response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "HTTP proxy IPv4",
+      "passed": true,
+      "Milliseconds": 1878,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "HTTP proxy IPv6",
+      "passed": true,
+      "Milliseconds": 1520,
+      "Message": "IPv6 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "SOCKS5 HTTPS",
+      "passed": true,
+      "Milliseconds": 3310,
+      "Message": "TLS-verified HTTPS response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "SOCKS5 HTTP",
+      "passed": true,
+      "Milliseconds": 1152,
+      "Message": "Plain HTTP response through SOCKS5 (gstatic.com). Resolver path is not established by this result.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "SOCKS5 IPv4",
+      "passed": true,
+      "Milliseconds": 1066,
+      "Message": "IPv4 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "SOCKS5 IPv6",
+      "passed": true,
+      "Milliseconds": 891,
+      "Message": "IPv6 remote exit measured through the proxy with target TLS validation; address omitted from test evidence.",
+      "coreFailure": null
+    },
+    {
+      "core": "Xray",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "core shutdown",
+      "passed": true
+    },
+    {
+      "core": "SingBox",
+      "protocol": "VLESS",
+      "transport": "httpupgrade",
+      "check": "compatibility",
+      "status": "unsupported",
+      "message": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed."
+    },
+    {
+      "core": "SingBox",
+      "protocol": "VLESS",
+      "transport": "ws",
+      "check": "compatibility",
+      "status": "unsupported",
+      "message": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed."
+    },
+    {
+      "core": "SingBox",
+      "protocol": "VLESS",
+      "transport": "raw",
+      "check": "compatibility",
+      "status": "unsupported",
+      "message": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed."
+    },
+    {
+      "core": "SingBox",
+      "protocol": "VLESS",
+      "transport": "xhttp",
+      "check": "compatibility",
+      "status": "unsupported",
+      "message": "This profile requires Xray VLESS Encryption, which the installed sing-box cannot support. Select Xray or obtain a separate sing-box-compatible profile; encryption will not be removed."
+    },
+    {
+      "check": "manual retry recovery",
+      "passed": true,
+      "Message": "TLS-verified HTTPS response through HTTP proxy (gstatic.com). Resolver path is not established by this result.",
+      "publicExitMeasured": true
+    },
+    {
+      "check": "probe cancellation",
+      "passed": true
+    },
+    {
+      "check": "owned core crash detected and cleaned",
+      "passed": true
+    },
+    {
+      "check": "manual restart after core crash",
+      "passed": true
+    },
+    {
+      "check": "startup cancellation",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Results apply only to listed authorized protocol/transport representatives",
+    "DNS domain requests measured; resolver packet path/leaks not captured",
+    "IPv6 failures do not establish a core defect without supported remote/network conditions",
+    "live WinINet/browser/restoration/crash/external changes intentionally excluded"
+  ]
+}

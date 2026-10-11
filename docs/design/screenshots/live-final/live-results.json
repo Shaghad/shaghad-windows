@@ -1,0 +1,125 @@
+{
+  "Core": "Xray",
+  "InternetVerified": true,
+  "PublicExitIpMeasured": true,
+  "CopyIpPassed": true,
+  "DisconnectClearedSession": true,
+  "LatencyAfterDisconnect": "\u2014",
+  "Layouts": [
+    {
+      "Width": 1024,
+      "Height": 600,
+      "Language": "en",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1024,
+      "Height": 600,
+      "Language": "en",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1024,
+      "Height": 600,
+      "Language": "fa",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1024,
+      "Height": 600,
+      "Language": "fa",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1280,
+      "Height": 720,
+      "Language": "en",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1280,
+      "Height": 720,
+      "Language": "en",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1280,
+      "Height": 720,
+      "Language": "fa",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1280,
+      "Height": 720,
+      "Language": "fa",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1366,
+      "Height": 768,
+      "Language": "en",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1366,
+      "Height": 768,
+      "Language": "en",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1366,
+      "Height": 768,
+      "Language": "fa",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1366,
+      "Height": 768,
+      "Language": "fa",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1920,
+      "Height": 1080,
+      "Language": "en",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1920,
+      "Height": 1080,
+      "Language": "en",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1920,
+      "Height": 1080,
+      "Language": "fa",
+      "Theme": "Light",
+      "ScrollableHeight": 0
+    },
+    {
+      "Width": 1920,
+      "Height": 1080,
+      "Language": "fa",
+      "Theme": "Dark",
+      "ScrollableHeight": 0
+    }
+  ],
+  "Notice": "No proxy changes owned by this session.",
+  "ProductionLibraryChanged": false,
+  "SystemProxyChanged": false
+}

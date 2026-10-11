@@ -12,16 +12,23 @@ public sealed class ConnectionService
         if (backend is ILocalProxyBackend local) local.UnexpectedExit += (_, _) => NotifyCoreExit();
     }
     private readonly SemaphoreSlim gate = new(1, 1);
+    private long generation;
     public ConnectionState State { get; private set; } = ConnectionState.Disconnected;
     public bool InternetVerified { get; private set; }
     public event EventHandler? StateChanged;
     public async void NotifyCoreExit()
     {
+        var observedGeneration = Interlocked.Read(ref generation);
         await gate.WaitAsync();
         try
         {
+            if (observedGeneration != Interlocked.Read(ref generation)) return;
             InternetVerified = false;
-            if (State is ConnectionState.Connected or ConnectionState.Connecting) State = ConnectionState.Error;
+            if (State is ConnectionState.Connected or ConnectionState.Connecting)
+            {
+                State = ConnectionState.Error;
+                try { await backend.StopAsync(CancellationToken.None); } catch { /* Remain in Error; explicit retry performs cleanup again. */ }
+            }
             StateChanged?.Invoke(this, EventArgs.Empty);
         }
         finally { gate.Release(); }
@@ -38,6 +45,8 @@ public sealed class ConnectionService
         {
             if (State is not (ConnectionState.Disconnected or ConnectionState.Error)) return false;
             if (!backend.IsAvailable) throw new InvalidOperationException("Core activation is unavailable in this build.");
+            Interlocked.Increment(ref generation);
+            if (State == ConnectionState.Error) await backend.StopAsync(CancellationToken.None);
             State = ConnectionState.Connecting;
             StateChanged?.Invoke(this, EventArgs.Empty);
             try
@@ -69,6 +78,7 @@ public sealed class ConnectionService
         try
         {
             if (State == ConnectionState.Disconnected) return true;
+            Interlocked.Increment(ref generation);
             State = ConnectionState.Disconnecting;
             StateChanged?.Invoke(this, EventArgs.Empty);
             try
