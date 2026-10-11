@@ -16,5 +16,23 @@
  <sys:String x:Key="RoutingUnavailable">Routing presets and advanced rules are unavailable until core capability validation is implemented.</sys:String>
  <sys:String x:Key="RunChecks">Run local checks</sys:String><sys:String x:Key="Theme">Appearance</sys:String>
  <sys:String x:Key="Language">Language</sys:String><sys:String x:Key="Save">Save preferences</sys:String>
- <sys:String x:Key="CloseNotice">Closing the window exits VPN-AJ. Tray, autostart, TUN and System Proxy are unavailable in this milestone.</sys:String>
+ <sys:String x:Key="CloseNotice">Closing the window exits SHAGHAD and removes its tray icon. Autostart, TUN and System Proxy are unavailable.</sys:String>
+ <sys:String x:Key="About">About SHAGHAD</sys:String>
+ <sys:String x:Key="ProductDescription">Modern Secure Network Client</sys:String>
+ <sys:String x:Key="DevelopmentBuild">Development build · v0.1</sys:String>
+ <sys:String x:Key="ConnectionStatus">Connection status</sys:String>
+ <sys:String x:Key="Connecting">Connecting</sys:String><sys:String x:Key="Connected">Connected</sys:String>
+ <sys:String x:Key="Disconnecting">Disconnecting</sys:String><sys:String x:Key="ConnectionError">Connection error</sys:String>
+ <sys:String x:Key="ConnectionModeUnavailable">Connection mode · unavailable</sys:String>
+ <sys:String x:Key="ChangeServer">Change server</sys:String>
+ <sys:String x:Key="PublicIP">Public IP</sys:String><sys:String x:Key="Latency">Latency</sys:String>
+ <sys:String x:Key="Download">Download</sys:String><sys:String x:Key="Upload">Upload</sys:String>
+ <sys:String x:Key="ProxyUnavailable">System Proxy · unavailable</sys:String>
+ <sys:String x:Key="AppearanceTitle">Make SHAGHAD yours</sys:String>
+ <sys:String x:Key="ApplicationVersion">Application version</sys:String>
+ <sys:String x:Key="CoreVersion">Core version</sys:String>
+ <sys:String x:Key="CoreNotInstalled">Not installed · core execution unavailable</sys:String>
+ <sys:String x:Key="GitHubRepository">GitHub repository</sys:String>
+ <sys:String x:Key="OpenLicenses">Open-source licenses</sys:String>
+ <sys:String x:Key="Attribution">SHAGHAD is an independent application using v2rayN ServiceLib 7.25.4, © 2dust and contributors, under GPL v3. No warranty. SHAGHAD is not an official v2rayN or Hiddify product. Vazirmatn © The Vazirmatn Project Authors, SIL OFL 1.1. Full dependency notices accompany development builds.</sys:String>
 </ResourceDictionary>

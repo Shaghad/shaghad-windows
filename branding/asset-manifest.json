@@ -1,0 +1,131 @@
+{
+  "generator": "scripts/export-branding.cjs",
+  "selectedConcept": "A — Persian Minimal",
+  "outputs": [
+    {
+      "path": "concepts/concept-a.svg",
+      "bytes": 592,
+      "sha256": "902d5f62a10e0820702e5f58e069e6e563e69f8feff455957742c4a6213f743d"
+    },
+    {
+      "path": "concepts/concept-b.svg",
+      "bytes": 547,
+      "sha256": "2654b37156558ce7f1690e15be20a73a57f2b8c225abf23d5b360a5e3cfded77"
+    },
+    {
+      "path": "concepts/concept-c.svg",
+      "bytes": 532,
+      "sha256": "ca4ef851612225d58160a45c5fee504baea1155e77368ba34ae6f7f3365812ae"
+    },
+    {
+      "path": "logo/shaghad-logo-dark.svg",
+      "bytes": 1358,
+      "sha256": "9ece0b59b091a22488b40d5fc60bef3ceb6c089df4d0c2b18e599ab9e1902649"
+    },
+    {
+      "path": "logo/shaghad-logo-horizontal.svg",
+      "bytes": 1359,
+      "sha256": "f916ed6d6e1463230a3d79ffb0f2fe81084fc91c9b891ed51b93cabb29be0351"
+    },
+    {
+      "path": "logo/shaghad-logo-light.svg",
+      "bytes": 1359,
+      "sha256": "1d405ea61b2a8c9c7750010c5c2a3c55c8987f93b0655837ea328f333265d747"
+    },
+    {
+      "path": "logo/shaghad-logo-vertical.svg",
+      "bytes": 1334,
+      "sha256": "f6cf6bccbdc3206cbc9b59141fa49e0390435de8790e9c3ef13da4adba85dd43"
+    },
+    {
+      "path": "logo/shaghad-monochrome.svg",
+      "bytes": 593,
+      "sha256": "5267999bfba7f6b88b695a3bbcfb678693b809b8af841c774e4d7d61d812e440"
+    },
+    {
+      "path": "logo/shaghad-symbol.svg",
+      "bytes": 587,
+      "sha256": "d59c34f124a21fe669f175859e35683a265e16f18996790cf1f2168c984b626d"
+    },
+    {
+      "path": "icons/shaghad-128.png",
+      "bytes": 2496,
+      "sha256": "8998ab9e0d86eea07cce854c15a1335432c096bd9000b7a0efd52eface543fd9"
+    },
+    {
+      "path": "icons/shaghad-16.png",
+      "bytes": 445,
+      "sha256": "acfe758302d15b09beae964b69756408f98688896a2a213e254164235ef7a8c7"
+    },
+    {
+      "path": "icons/shaghad-24.png",
+      "bytes": 634,
+      "sha256": "aa74bf9b3713df1c05759934e64010078f3cd61343311207d42e07c10b866776"
+    },
+    {
+      "path": "icons/shaghad-256.png",
+      "bytes": 5513,
+      "sha256": "dbd4dfa3acc7a21b0c4a021c35c20b945c30c52de9d49b4720006c860b7ee78a"
+    },
+    {
+      "path": "icons/shaghad-32.png",
+      "bytes": 735,
+      "sha256": "d77080d8fe3710792357f88b453e30d14e39f5ad3352db069398d6d0eada0b83"
+    },
+    {
+      "path": "icons/shaghad-48.png",
+      "bytes": 1098,
+      "sha256": "778305b130c089689227b1d4a74a9accafc6324c6c5d3ff53b8b399aea67d4e3"
+    },
+    {
+      "path": "icons/shaghad-512.png",
+      "bytes": 15493,
+      "sha256": "e298c5b63ce6a2c07e7f881ebdaf90fc5682a03e8c9f29d5fd120080908e21f1"
+    },
+    {
+      "path": "icons/shaghad-64.png",
+      "bytes": 1324,
+      "sha256": "f780ec69f1254bc7302f877e072e224697788fdfadbded4b2a541ccf46bdd2f0"
+    },
+    {
+      "path": "icons/shaghad-app-icon.svg",
+      "bytes": 625,
+      "sha256": "d73524296090b9f47954d10dfd7c9e840a45098ff87268b1fffe7f8eb5e6b5e1"
+    },
+    {
+      "path": "icons/shaghad.ico",
+      "bytes": 12363,
+      "sha256": "bd6d38e3f4dff2b3edb0e27ccddb8706804d7a6743e5bbbda7773e4b292c0a61"
+    },
+    {
+      "path": "previews/concepts-preview.png",
+      "bytes": 127737,
+      "sha256": "a10468202a02ef97e17490bf23b7b40aaa05ca88db0e9ddad54906a1fcb02d08"
+    },
+    {
+      "path": "previews/concepts-preview.svg",
+      "bytes": 15864,
+      "sha256": "a92e7730197a6c8a08cfb88a19dad1ec0b409b8cc80df38a70adbd2ff5ba68f5"
+    },
+    {
+      "path": "previews/dark-preview.png",
+      "bytes": 66922,
+      "sha256": "7224912da41c30b3daeeefc81731e8d69a49ca1edaf693fa74d59a3cea3db4c5"
+    },
+    {
+      "path": "previews/dark-preview.svg",
+      "bytes": 2633,
+      "sha256": "5ef9a03f3f9ed6100d929f0ed305dafedf88f16a0d29745f191ba08c4fbf20ad"
+    },
+    {
+      "path": "previews/light-preview.png",
+      "bytes": 66989,
+      "sha256": "718bbeff5bcd4cda01c8164b557a9cc6bbe7a41867a4889533ccbaf474405187"
+    },
+    {
+      "path": "previews/light-preview.svg",
+      "bytes": 2634,
+      "sha256": "2058f580c8e0b88e9f88bae2717ff753839650b8a743d3aa5305ab4c895770c9"
+    }
+  ]
+}

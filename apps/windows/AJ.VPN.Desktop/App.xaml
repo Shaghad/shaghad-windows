@@ -3,7 +3,8 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  ShutdownMode="OnMainWindowClose">
  <Application.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
- <ResourceDictionary Source="Styles/DesignSystem.xaml"/>
+ <ResourceDictionary Source="Styles/ShaghadDesignSystem.xaml"/>
+ <ResourceDictionary Source="Assets/BrandGeometry.xaml"/>
  <ResourceDictionary Source="Resources/English.xaml"/>
  </ResourceDictionary.MergedDictionaries></ResourceDictionary></Application.Resources>
 </Application>

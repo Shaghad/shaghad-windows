@@ -16,5 +16,23 @@
  <sys:String x:Key="RoutingUnavailable">مسیریابی تا پیاده‌سازی اعتبارسنجی قابلیت‌های هسته در دسترس نیست.</sys:String>
  <sys:String x:Key="RunChecks">بررسی محلی</sys:String><sys:String x:Key="Theme">ظاهر</sys:String>
  <sys:String x:Key="Language">زبان</sys:String><sys:String x:Key="Save">ذخیره تنظیمات</sys:String>
- <sys:String x:Key="CloseNotice">بستن پنجره باعث خروج می‌شود. سینی سیستم، شروع خودکار، TUN و پروکسی سیستم فعلاً در دسترس نیست.</sys:String>
+ <sys:String x:Key="CloseNotice">بستن پنجره باعث خروج از شغاد و حذف نماد سینی می‌شود. شروع خودکار، TUN و پروکسی سیستم در دسترس نیست.</sys:String>
+ <sys:String x:Key="About">درباره شغاد</sys:String>
+ <sys:String x:Key="ProductDescription">کارخواه مدرن ارتباط امن</sys:String>
+ <sys:String x:Key="DevelopmentBuild">نسخه توسعه · ۰٫۱</sys:String>
+ <sys:String x:Key="ConnectionStatus">وضعیت اتصال</sys:String>
+ <sys:String x:Key="Connecting">در حال اتصال</sys:String><sys:String x:Key="Connected">متصل</sys:String>
+ <sys:String x:Key="Disconnecting">در حال قطع اتصال</sys:String><sys:String x:Key="ConnectionError">خطای اتصال</sys:String>
+ <sys:String x:Key="ConnectionModeUnavailable">حالت اتصال · در دسترس نیست</sys:String>
+ <sys:String x:Key="ChangeServer">تغییر سرور</sys:String>
+ <sys:String x:Key="PublicIP">نشانی عمومی</sys:String><sys:String x:Key="Latency">تأخیر</sys:String>
+ <sys:String x:Key="Download">دریافت</sys:String><sys:String x:Key="Upload">ارسال</sys:String>
+ <sys:String x:Key="ProxyUnavailable">پروکسی سیستم · غیرفعال</sys:String>
+ <sys:String x:Key="AppearanceTitle">ظاهر دلخواه شغاد</sys:String>
+ <sys:String x:Key="ApplicationVersion">نسخه برنامه</sys:String>
+ <sys:String x:Key="CoreVersion">نسخه هسته</sys:String>
+ <sys:String x:Key="CoreNotInstalled">نصب نشده · اجرای هسته در دسترس نیست</sys:String>
+ <sys:String x:Key="GitHubRepository">مخزن گیت‌هاب</sys:String>
+ <sys:String x:Key="OpenLicenses">مجوزهای متن‌باز</sys:String>
+ <sys:String x:Key="Attribution">شغاد برنامه‌ای مستقل است و از کتابخانه v2rayN ServiceLib نسخه ۷٫۲۵٫۴، اثر 2dust و همکاران، با مجوز GPL v3 استفاده می‌کند. این محصول رسمی v2rayN یا Hiddify نیست و ضمانتی ندارد. قلم وزیرمتن متعلق به نویسندگان پروژه Vazirmatn با مجوز SIL OFL 1.1 است. اطلاعات مجوز وابستگی‌ها همراه خروجی توسعه ارائه می‌شود.</sys:String>
 </ResourceDictionary>

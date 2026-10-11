@@ -36,6 +36,8 @@ public sealed class ShellViewModel : ObservableObject
     }
     public ApplicationSettings Settings => settings;
     public ConnectionState State => connection.State;
+    public string ApplicationVersion => typeof(ShellViewModel).Assembly.GetName().Version?.ToString(3) ?? "Unavailable";
+    public string GitHubRepository => "https://github.com/Shaghad/shaghad-windows";
     public string CurrentPage { get => currentPage; set => Set(ref currentPage, value); }
     public string Notice { get => notice; private set => Set(ref notice, value); }
     public string ProfileInput { get => profileInput; set => Set(ref profileInput, value); }

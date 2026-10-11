@@ -1,8 +1,8 @@
-# VPN-AJ
+# SHAGHAD | شغاد
 
-Original Windows VPN client foundation in C# / .NET 10 / WPF with Clean Architecture and MVVM. This development build does **not** establish a VPN connection and is not production-ready.
+Modern Secure Network Client. Original Windows VPN client foundation in C# / .NET 10 / WPF with Clean Architecture and MVVM, developed in the VPN-AJ repository. This development build does **not** establish a VPN connection and is not production-ready.
 
-Implemented: dashboard and seven-page navigation, real local diagnostics, atomic versioned appearance preferences, light/dark/system themes, high-contrast resources, English/Persian RTL infrastructure, serialized connection-state orchestration, and profile preview validation using actual v2rayN ServiceLib. No sample servers, fake traffic, core binary downloads, driver installation, elevation or networking changes.
+Implemented: original SHAGHAD identity and multi-resolution icon, dashboard and eight-page navigation including About/licenses, tray Open/About/Exit, real local diagnostics, atomic versioned appearance preferences, light/dark/system themes, high-contrast resources, English/Persian RTL with bundled OFL Vazirmatn, serialized connection-state orchestration, and profile preview validation using actual v2rayN ServiceLib. No sample servers, fake traffic, core binary downloads, driver installation, elevation or networking changes.
 
 ## Build and run
 
@@ -14,10 +14,12 @@ Requirements: Windows supported by .NET 10 and SDK 10.0.401. Visual Studio is op
 ./scripts/smoke-test.ps1
 ./scripts/publish.ps1
 # Launch the built desktop app:
-./.tools/dotnet/dotnet apps/windows/AJ.VPN.Desktop/bin/Release/net10.0-windows/AJ.VPN.Desktop.dll
+./.tools/dotnet/dotnet apps/windows/AJ.VPN.Desktop/bin/Release/net10.0-windows/Shaghad.dll
 ```
 
-For an installed SDK use `dotnet` in the last command. Preferences and sanitized event metadata are stored under `%LOCALAPPDATA%/VPN-AJ`. Profile input is preview-only and not persisted. Closing the window exits. Connection, subscriptions, routing, real metrics, tray, autostart and TUN are visibly unavailable.
+For an installed SDK use `dotnet` in the last command. The executable is `Shaghad.exe`; development publish output is `artifacts/shaghad-windows-x64`. Preferences and sanitized event metadata remain under `%LOCALAPPDATA%/VPN-AJ` to preserve existing data. Profile input is preview-only and not persisted. Closing the window exits and removes the tray icon. Connection, subscriptions, routing, real metrics, autostart and TUN are visibly unavailable.
+
+Brand assets and reproducible export/validation instructions: [guidelines](branding/BRAND-GUIDELINES.md), [branding report](docs/design/SHAGHAD-BRANDING-REPORT.md) and [UI design system](docs/design/UI-DESIGN-SYSTEM.md).
 
 ## Source and licensing
 

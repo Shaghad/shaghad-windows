@@ -11,9 +11,24 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Shaghad</AssemblyName>
+    <RootNamespace>AJ.VPN.Desktop</RootNamespace>
+    <Title>SHAGHAD</Title>
+    <AssemblyTitle>SHAGHAD</AssemblyTitle>
+    <Product>SHAGHAD</Product>
+    <Description>Modern Secure Network Client</Description>
+    <Version>0.1.0</Version>
+    <ApplicationIcon>..\..\..\branding\icons\shaghad.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Resource Include="..\..\..\branding\icons\shaghad.ico" Link="Assets/shaghad.ico" />
+    <Resource Include="..\..\..\branding\fonts\*.ttf" Link="Assets/Fonts/%(Filename)%(Extension)" />
+    <Resource Include="..\..\..\branding\fonts\OFL.txt" Link="Assets/Licenses/Vazirmatn-OFL.txt" />
+    <Resource Include="..\..\..\LICENSE" Link="Assets/Licenses/GPL-3.0.txt" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
   </ItemGroup>

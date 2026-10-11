@@ -1,5 +1,7 @@
 # Validation — 2026-10-11
 
+The foundation results below are retained as the original milestone record. Subsequent SHAGHAD branding validation, eight-page UI checks, ICO/font/tray callback evidence and renamed publish output are recorded in `D:\VPN-AJ\docs\design\SHAGHAD-BRANDING-REPORT.md`. Its Remaining Issues section distinguishes automated checks from unverified native shell behavior.
+
 ## Environment
 
 Host Windows 10.0.26300, win-x64. Git 2.56.0.windows.2. Initial PATH dotnet had .NET 10.0.12 runtime/Desktop runtime but no SDK. Workspace-local official SDK 10.0.401 installed under D:/VPN-AJ/.tools/dotnet; MSBuild 18.9.11. No Visual Studio installation was found at the standard Installer/vswhere path. CLI WPF build succeeded without it. No system-wide dependency installer was run. CLI home/package cache are workspace-local; telemetry opt-out is set in scripts.

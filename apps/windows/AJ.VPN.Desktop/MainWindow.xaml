@@ -1,110 +1,132 @@
 <Window x:Class="AJ.VPN.Desktop.MainWindow"
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AJ.VPN.Desktop"
- Title="VPN-AJ" Width="1120" Height="780" MinWidth="800" MinHeight="600"
- FontFamily="Segoe UI" FontSize="14" WindowStartupLocation="CenterScreen" Background="{DynamicResource PageBrush}" Foreground="{DynamicResource TextBrush}">
- <Window.Resources><local:NavigationMatchConverter x:Key="NavigationMatch"/>
+ Title="SHAGHAD" Icon="Assets/shaghad.ico" Width="1200" Height="860" MinWidth="800" MinHeight="600"
+ FontFamily="{DynamicResource UiFont}" FontSize="14" WindowStartupLocation="CenterScreen" Background="{DynamicResource PageBrush}" Foreground="{DynamicResource TextBrush}">
+ <Window.Resources>
+  <local:NavigationMatchConverter x:Key="NavigationMatch"/>
   <Style x:Key="Page" TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/></Style>
-  <Style x:Key="Nav" TargetType="RadioButton">
-   <Setter Property="Padding" Value="14,12"/><Setter Property="Margin" Value="0,3"/>
-   <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-   <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-   <Setter Property="MinHeight" Value="46"/>
-   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
-    <Border x:Name="NavBorder" CornerRadius="8" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0">
-     <DockPanel><TextBlock DockPanel.Dock="Left" Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" Margin="0,0,12,0" VerticalAlignment="Center"/><ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/></DockPanel>
-    </Border>
-    <ControlTemplate.Triggers>
-     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="NavBorder" Property="BorderThickness" Value="1"/></Trigger>
-     <Trigger Property="IsChecked" Value="True"><Setter TargetName="NavBorder" Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
-     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="NavBorder" Property="BorderThickness" Value="2"/></Trigger>
-    </ControlTemplate.Triggers>
-   </ControlTemplate></Setter.Value></Setter>
-  </Style>
  </Window.Resources>
  <Grid Background="{DynamicResource PageBrush}">
-  <Grid.ColumnDefinitions><ColumnDefinition Width="220"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-  <Border Padding="20" Background="{DynamicResource SurfaceBrush}">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="240"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+  <Border Padding="20,26,20,20" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
    <DockPanel>
-    <StackPanel DockPanel.Dock="Top" Margin="4,8,0,32"><TextBlock Text="VPN-AJ" FontSize="26" FontWeight="Bold" FlowDirection="LeftToRight"/><TextBlock Text="Windows · Foundation" FontSize="12" Margin="0,4,0,0"/></StackPanel>
-    <Button DockPanel.Dock="Bottom" Content="{DynamicResource Exit}" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitButton"/>
+    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,28">
+     <DockPanel FlowDirection="LeftToRight"><Image Source="{DynamicResource ShaghadSymbol}" Width="44" Height="44" Margin="0,0,10,0" AutomationProperties.Name="SHAGHAD symbol"/>
+      <StackPanel VerticalAlignment="Center"><TextBlock Text="SHAGHAD" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold"/><TextBlock Text="شغاد" FontFamily="{DynamicResource PersianFont}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="13"/></StackPanel>
+     </DockPanel>
+     <TextBlock Text="{DynamicResource ProductDescription}" Style="{StaticResource SecondaryText}" FontSize="11" Margin="6,10,0,0"/>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom">
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource About}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE946;" CommandParameter="About" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=About}" AutomationProperties.AutomationId="NavAbout"/>
+     <Button Content="{DynamicResource Exit}" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitButton" Margin="0,12,0,0"/>
+     <TextBlock Text="{DynamicResource DevelopmentBuild}" Style="{StaticResource SecondaryText}" FontSize="11" Margin="6,14,0,0"/>
+    </StackPanel>
     <StackPanel>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Dashboard}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE80F;" CommandParameter="Dashboard" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Dashboard}" AutomationProperties.AutomationId="NavDashboard"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Servers}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE968;" CommandParameter="Servers" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Servers}" AutomationProperties.AutomationId="NavServers"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Subscriptions}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE8D4;" CommandParameter="Subscriptions" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Subscriptions}" AutomationProperties.AutomationId="NavSubscriptions"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Routing}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE8AB;" CommandParameter="Routing" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Routing}"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Statistics}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE9D9;" CommandParameter="Statistics" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Statistics}"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Diagnostics}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE90F;" CommandParameter="Diagnostics" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Diagnostics}" AutomationProperties.AutomationId="NavDiagnostics"/>
-     <RadioButton Style="{StaticResource Nav}" Content="{DynamicResource Settings}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE713;" CommandParameter="Settings" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Settings}" AutomationProperties.AutomationId="NavSettings"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Dashboard}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE80F;" CommandParameter="Dashboard" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Dashboard}" AutomationProperties.AutomationId="NavDashboard"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Servers}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE968;" CommandParameter="Servers" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Servers}" AutomationProperties.AutomationId="NavServers"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Subscriptions}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE8D4;" CommandParameter="Subscriptions" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Subscriptions}" AutomationProperties.AutomationId="NavSubscriptions"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Routing}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE8AB;" CommandParameter="Routing" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Routing}"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Statistics}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE9D9;" CommandParameter="Statistics" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Statistics}"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Diagnostics}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE90F;" CommandParameter="Diagnostics" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Diagnostics}" AutomationProperties.AutomationId="NavDiagnostics"/>
+     <RadioButton Style="{StaticResource ShaghadNavigationItem}" Content="{DynamicResource Settings}" GroupName="Navigation" Command="{Binding NavigateCommand}" Tag="&#xE713;" CommandParameter="Settings" IsChecked="{Binding CurrentPage, Mode=OneWay, Converter={StaticResource NavigationMatch}, ConverterParameter=Settings}" AutomationProperties.AutomationId="NavSettings"/>
     </StackPanel>
    </DockPanel>
   </Border>
-  <DockPanel Grid.Column="1" Margin="32,24">
-   <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Padding="14"><TextBlock Text="{DynamicResource FoundationNotice}"/></Border>
+  <DockPanel Grid.Column="1" Margin="32,26">
+   <Border DockPanel.Dock="Top" Style="{StaticResource ShaghadCard}" Padding="14,10" Margin="0,0,0,22"><TextBlock Text="{DynamicResource FoundationNotice}" Style="{StaticResource SecondaryText}" FontSize="12"/></Border>
    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Notice}" AutomationProperties.LiveSetting="Polite" Margin="0,10,0,0"/>
-   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0">
     <Grid>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Dashboard"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
       <TextBlock Text="{DynamicResource Dashboard}" Style="{StaticResource Heading}"/>
-      <TextBlock Text="{DynamicResource Welcome}" FontSize="18" Margin="0,0,0,22"/>
-      <Border Style="{StaticResource Card}"><StackPanel HorizontalAlignment="Center" MaxWidth="500">
-       <TextBlock Text="{DynamicResource Disconnected}" HorizontalAlignment="Center" FontSize="26" FontWeight="SemiBold"/>
-       <Button Content="{DynamicResource Connect}" IsEnabled="False" Width="230" Height="110" Margin="0,24" AutomationProperties.Name="Connect unavailable"/>
-       <TextBlock Text="{DynamicResource CoreNotice}" TextAlignment="Center"/>
-      </StackPanel></Border>
-      <Border Style="{StaticResource Card}"><StackPanel>
-       <TextBlock Text="{DynamicResource SelectedServer}" Style="{StaticResource Subheading}"/><TextBlock Text="{DynamicResource NoServer}"/>
-       <TextBlock Text="{DynamicResource NoMetrics}" Margin="0,16,0,8"/>
-       <TextBlock Text="Duration: —   Profile: —   Mode: unavailable" FlowDirection="LeftToRight"/>
-      </StackPanel></Border>
-      <WrapPanel>
-       <Button Content="{DynamicResource Servers}" Command="{Binding NavigateCommand}" CommandParameter="Servers"/>
-       <Button Content="{DynamicResource Diagnostics}" Command="{Binding NavigateCommand}" CommandParameter="Diagnostics"/>
-       <Button Content="System Proxy — unavailable" IsEnabled="False"/>
-      </WrapPanel>
+      <TextBlock Text="{DynamicResource Welcome}" Style="{StaticResource SecondaryText}" Margin="0,0,0,24"/>
+      <Border Style="{StaticResource ShaghadCard}">
+       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/></Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center" Margin="0,0,24,0">
+         <TextBlock Text="SHAGHAD" FontFamily="Segoe UI" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SymbolBrush}" FlowDirection="LeftToRight" Margin="0,0,0,14"/>
+         <TextBlock Text="{DynamicResource ConnectionStatus}" Style="{StaticResource Subheading}"/>
+         <Border Style="{StaticResource ShaghadStatusBadge}" Margin="0,0,0,18"><TextBlock Style="{StaticResource ConnectionLabel}" AutomationProperties.LiveSetting="Polite"/></Border>
+         <TextBlock Text="{DynamicResource CoreNotice}" Style="{StaticResource SecondaryText}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+         <Border CornerRadius="80" Width="148" Height="148" BorderThickness="2" BorderBrush="{DynamicResource InputBorderBrush}" Background="{DynamicResource PageBrush}">
+          <StackPanel VerticalAlignment="Center"><TextBlock Text="&#xE7E8;" FontFamily="Segoe MDL2 Assets" FontSize="40" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,12"/><TextBlock HorizontalAlignment="Center" FontSize="12" Style="{StaticResource ConnectionLabel}"/></StackPanel>
+         </Border>
+         <Button Content="{DynamicResource Connect}" IsEnabled="False" Margin="0,14,0,0" AutomationProperties.Name="Connect unavailable"/>
+        </StackPanel>
+       </Grid>
+      </Border>
+      <Border Style="{StaticResource ShaghadServerCard}"><Grid>
+       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <StackPanel><TextBlock Text="{DynamicResource SelectedServer}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{DynamicResource NoServer}" FontSize="19" FontWeight="SemiBold" Margin="0,7,0,0"/><TextBlock Text="{DynamicResource ConnectionModeUnavailable}" Style="{StaticResource SecondaryText}" FontSize="12" Margin="0,7,0,0"/></StackPanel>
+       <Button Grid.Column="1" Content="{DynamicResource ChangeServer}" Command="{Binding NavigateCommand}" CommandParameter="Servers" VerticalAlignment="Center" Style="{StaticResource ShaghadPrimaryButton}" Margin="16,0,0,0"/>
+      </Grid></Border>
+      <UniformGrid Columns="4" Margin="0,0,-12,0">
+       <Border Style="{StaticResource ShaghadMetricCard}"><StackPanel><TextBlock Text="{DynamicResource PublicIP}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="—" FontSize="28" Margin="0,10,0,0" FlowDirection="LeftToRight"/></StackPanel></Border>
+       <Border Style="{StaticResource ShaghadMetricCard}"><StackPanel><TextBlock Text="{DynamicResource Latency}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="—" FontSize="28" Margin="0,10,0,0" FlowDirection="LeftToRight"/></StackPanel></Border>
+       <Border Style="{StaticResource ShaghadMetricCard}"><StackPanel><TextBlock Text="{DynamicResource Download}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="—" FontSize="28" Margin="0,10,0,0" FlowDirection="LeftToRight"/></StackPanel></Border>
+       <Border Style="{StaticResource ShaghadMetricCard}"><StackPanel><TextBlock Text="{DynamicResource Upload}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="—" FontSize="28" Margin="0,10,0,0" FlowDirection="LeftToRight"/></StackPanel></Border>
+      </UniformGrid>
+      <TextBlock Text="{DynamicResource NoMetrics}" Style="{StaticResource SecondaryText}" FontSize="12" Margin="0,0,0,12"/>
+      <WrapPanel><Button Content="{DynamicResource Diagnostics}" Command="{Binding NavigateCommand}" CommandParameter="Diagnostics"/><Button Content="{DynamicResource ProxyUnavailable}" IsEnabled="False"/></WrapPanel>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Servers}" Style="{StaticResource Heading}"/>
-      <Border Style="{StaticResource Card}"><StackPanel>
-       <TextBlock Text="{DynamicResource Preview}" Style="{StaticResource Subheading}"/>
-       <TextBlock Text="{DynamicResource PreviewNotice}" Margin="0,0,0,16"/>
-       <TextBox Text="{Binding ProfileInput, UpdateSourceTrigger=PropertyChanged}" MaxLength="16384" Height="44" FlowDirection="LeftToRight" AutomationProperties.Name="Server share URI" AutomationProperties.AutomationId="ProfileInput"/>
-       <Button Content="{DynamicResource Validate}" Command="{Binding ValidateCommand}" HorizontalAlignment="Left" Margin="0,12" AutomationProperties.AutomationId="ValidateProfile"/>
-       <TextBlock Text="{Binding ProfileResult}" FlowDirection="LeftToRight" AutomationProperties.LiveSetting="Polite"/>
+      <TextBlock Text="{DynamicResource Servers}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
+      <Border Style="{StaticResource ShaghadCard}"><StackPanel>
+       <TextBlock Text="{DynamicResource Preview}" Style="{StaticResource Subheading}"/><TextBlock Text="{DynamicResource PreviewNotice}" Style="{StaticResource SecondaryText}" Margin="0,0,0,16"/>
+       <TextBox Text="{Binding ProfileInput, UpdateSourceTrigger=PropertyChanged}" MaxLength="16384" Height="46" FlowDirection="LeftToRight" FontFamily="Segoe UI" AutomationProperties.Name="Server share URI" AutomationProperties.AutomationId="ProfileInput"/>
+       <Button Content="{DynamicResource Validate}" Command="{Binding ValidateCommand}" HorizontalAlignment="Left" Margin="0,16" Style="{StaticResource ShaghadPrimaryButton}" AutomationProperties.AutomationId="ValidateProfile"/>
+       <TextBlock Text="{Binding ProfileResult}" FlowDirection="LeftToRight" FontFamily="Segoe UI" AutomationProperties.LiveSetting="Polite"/>
       </StackPanel></Border>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Subscriptions"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Subscriptions}" Style="{StaticResource Heading}"/>
-      <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="{DynamicResource EmptySubscriptions}"/><Button Content="{DynamicResource AddUnavailable}" IsEnabled="False" HorizontalAlignment="Left" Margin="0,20,0,0"/></StackPanel></Border>
+      <TextBlock Text="{DynamicResource Subscriptions}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
+      <Border Style="{StaticResource ShaghadCard}"><StackPanel><TextBlock Text="{DynamicResource EmptySubscriptions}" Style="{StaticResource SecondaryText}"/><Button Content="{DynamicResource AddUnavailable}" IsEnabled="False" HorizontalAlignment="Left" Margin="0,20,0,0"/></StackPanel></Border>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Routing"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Routing}" Style="{StaticResource Heading}"/><Border Style="{StaticResource Card}"><TextBlock Text="{DynamicResource RoutingUnavailable}"/></Border>
+      <TextBlock Text="{DynamicResource Routing}" Style="{StaticResource Heading}" Margin="0,0,0,24"/><Border Style="{StaticResource ShaghadCard}"><TextBlock Text="{DynamicResource RoutingUnavailable}" Style="{StaticResource SecondaryText}"/></Border>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Statistics"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Statistics}" Style="{StaticResource Heading}"/><Border Style="{StaticResource Card}"><TextBlock Text="{DynamicResource NoMetrics}"/></Border>
+      <TextBlock Text="{DynamicResource Statistics}" Style="{StaticResource Heading}" Margin="0,0,0,24"/><Border Style="{StaticResource ShaghadCard}"><TextBlock Text="{DynamicResource NoMetrics}" Style="{StaticResource SecondaryText}"/></Border>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Diagnostics"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Diagnostics}" Style="{StaticResource Heading}"/>
-      <Button Content="{DynamicResource RunChecks}" Command="{Binding DiagnosticsCommand}" HorizontalAlignment="Left" Margin="0,0,0,20" AutomationProperties.AutomationId="RunDiagnostics"/>
-      <ItemsControl ItemsSource="{Binding Diagnostics}"><ItemsControl.ItemTemplate><DataTemplate><Border Style="{StaticResource Card}"><StackPanel>
-       <TextBlock Text="{Binding Status}" Style="{StaticResource Subheading}"/><TextBlock Text="{Binding Explanation}"/>
-       <TextBlock Text="{Binding PossibleCause}" Margin="0,8,0,0"/><TextBlock Text="{Binding RecommendedAction}" Margin="0,8,0,0"/>
+      <TextBlock Text="{DynamicResource Diagnostics}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
+      <Button Content="{DynamicResource RunChecks}" Command="{Binding DiagnosticsCommand}" HorizontalAlignment="Left" Margin="0,0,0,20" Style="{StaticResource ShaghadPrimaryButton}" AutomationProperties.AutomationId="RunDiagnostics"/>
+      <ItemsControl ItemsSource="{Binding Diagnostics}"><ItemsControl.ItemTemplate><DataTemplate><Border Style="{StaticResource ShaghadCard}"><StackPanel>
+       <TextBlock Text="{Binding Status}" Style="{StaticResource Subheading}"/><TextBlock Text="{Binding Explanation}"/><TextBlock Text="{Binding PossibleCause}" Style="{StaticResource SecondaryText}" Margin="0,8,0,0"/><TextBlock Text="{Binding RecommendedAction}" Margin="0,8,0,0"/>
       </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Settings"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Settings}" Style="{StaticResource Heading}"/>
-      <Border Style="{StaticResource Card}"><StackPanel>
+      <TextBlock Text="{DynamicResource Settings}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
+      <Border Style="{StaticResource ShaghadCard}"><StackPanel>
+       <TextBlock Text="{DynamicResource AppearanceTitle}" Style="{StaticResource Subheading}"/>
        <TextBlock Text="{DynamicResource Theme}"/><ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" AutomationProperties.Name="Theme" AutomationProperties.AutomationId="ThemeSelector"/>
        <TextBlock Text="{DynamicResource Language}"/><ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" AutomationProperties.Name="Language" AutomationProperties.AutomationId="LanguageSelector"/>
-       <Button Content="{DynamicResource Save}" Command="{Binding SaveCommand}" HorizontalAlignment="Left" AutomationProperties.AutomationId="SavePreferences"/>
-       <TextBlock Text="{DynamicResource CloseNotice}" Margin="0,20,0,0"/>
-       <TextBlock Text="GPL v3 · v2rayN ServiceLib © 2dust and contributors. No warranty. See LICENSE and docs/legal for source and third-party notices." Margin="0,20,0,0" FlowDirection="LeftToRight"/>
+       <Button Content="{DynamicResource Save}" Command="{Binding SaveCommand}" HorizontalAlignment="Left" Style="{StaticResource ShaghadPrimaryButton}" AutomationProperties.AutomationId="SavePreferences"/>
+       <TextBlock Text="{DynamicResource CloseNotice}" Style="{StaticResource SecondaryText}" Margin="0,20,0,0"/>
+      </StackPanel></Border>
+      <Border Style="{StaticResource ShaghadCard}"><DockPanel><Image Source="{DynamicResource ShaghadSymbol}" Width="56" Height="56" FlowDirection="LeftToRight" Margin="0,0,18,0"/><StackPanel><TextBlock Text="SHAGHAD | شغاد" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource ProductDescription}" Style="{StaticResource SecondaryText}"/><Button Content="{DynamicResource About}" Command="{Binding NavigateCommand}" CommandParameter="About" HorizontalAlignment="Left" Margin="0,12,0,0"/></StackPanel></DockPanel></Border>
+     </StackPanel>
+     <StackPanel>
+      <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="About"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+      <TextBlock Text="{DynamicResource About}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
+      <Border Style="{StaticResource ShaghadCard}"><StackPanel>
+       <Image Source="{DynamicResource ShaghadSymbol}" Width="100" Height="100" FlowDirection="LeftToRight" HorizontalAlignment="Left"/>
+       <TextBlock Text="SHAGHAD" FontFamily="Segoe UI" FontSize="32" FontWeight="SemiBold" FlowDirection="LeftToRight" Margin="0,14,0,4"/><TextBlock Text="شغاد" FontFamily="{DynamicResource PersianFont}" FontSize="22"/>
+       <TextBlock Text="{DynamicResource ProductDescription}" Style="{StaticResource SecondaryText}" Margin="0,8,0,24"/>
+       <TextBlock Text="{DynamicResource ApplicationVersion}" Style="{StaticResource SecondaryText}"/><TextBlock Text="{Binding ApplicationVersion}" FlowDirection="LeftToRight" Margin="0,4,0,16"/>
+       <TextBlock Text="{DynamicResource CoreVersion}" Style="{StaticResource SecondaryText}"/><TextBlock Text="{DynamicResource CoreNotInstalled}" Margin="0,4,0,16"/>
+       <TextBlock Text="{DynamicResource GitHubRepository}" Style="{StaticResource SecondaryText}"/>
+       <TextBlock FlowDirection="LeftToRight" Margin="0,4,0,16"><Hyperlink NavigateUri="{Binding GitHubRepository, Mode=OneWay}" RequestNavigate="OpenRepository" Foreground="{DynamicResource SymbolBrush}"><Run Text="{Binding GitHubRepository, Mode=OneWay}"/></Hyperlink></TextBlock>
+       <Button Content="{DynamicResource OpenLicenses}" Click="OpenLicenses" HorizontalAlignment="Left" AutomationProperties.AutomationId="OpenLicenses"/>
+       <TextBlock Text="{DynamicResource Attribution}" Style="{StaticResource SecondaryText}" Margin="0,20,0,0"/>
       </StackPanel></Border>
      </StackPanel>
     </Grid>

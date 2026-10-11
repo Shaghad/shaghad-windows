@@ -1,0 +1,10 @@
+# Keep generated SVG hashes reproducible on Windows clones.
+branding/**/*.svg text eol=lf
+branding/*.json text eol=lf
+# Retain upstream font license/authors bytes, including their original whitespace.
+branding/fonts/* -text -whitespace
+branding/**/*.png binary
+branding/**/*.ico binary
+docs/design/evidence/*.png binary
+scripts/export-branding.cjs text eol=lf
+apps/windows/AJ.VPN.Desktop/Assets/BrandGeometry.xaml text eol=lf

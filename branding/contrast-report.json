@@ -1,0 +1,146 @@
+[
+  {
+    "pair": "Soft white / navy",
+    "foreground": "#F8FAFC",
+    "background": "#0B1120",
+    "usage": "body text",
+    "ratio": 18,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Gray / navy",
+    "foreground": "#94A3B8",
+    "background": "#0B1120",
+    "usage": "secondary text",
+    "ratio": 7.34,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Soft white / slate",
+    "foreground": "#F8FAFC",
+    "background": "#1E293B",
+    "usage": "card text",
+    "ratio": 13.98,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Gray / slate",
+    "foreground": "#94A3B8",
+    "background": "#1E293B",
+    "usage": "secondary card text",
+    "ratio": 5.71,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Turquoise / navy",
+    "foreground": "#20C5C7",
+    "background": "#0B1120",
+    "usage": "brand symbol, status",
+    "ratio": 8.85,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "pair": "Turquoise / slate",
+    "foreground": "#20C5C7",
+    "background": "#1E293B",
+    "usage": "brand on card",
+    "ratio": 6.88,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "pair": "Navy / turquoise",
+    "foreground": "#0B1120",
+    "background": "#20C5C7",
+    "usage": "selected/primary control text",
+    "ratio": 8.85,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Navy / soft white",
+    "foreground": "#0B1120",
+    "background": "#F8FAFC",
+    "usage": "light body",
+    "ratio": 18,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Muted light / soft white",
+    "foreground": "#526379",
+    "background": "#F8FAFC",
+    "usage": "light secondary text",
+    "ratio": 5.87,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Deep teal / white",
+    "foreground": "#087E80",
+    "background": "#FFFFFF",
+    "usage": "light accent/symbol",
+    "ratio": 4.88,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Success / slate",
+    "foreground": "#22C55E",
+    "background": "#1E293B",
+    "usage": "dark status text",
+    "ratio": 6.42,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Error / slate",
+    "foreground": "#EF4444",
+    "background": "#1E293B",
+    "usage": "error icon only",
+    "ratio": 3.89,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "pair": "Error text / slate",
+    "foreground": "#F87171",
+    "background": "#1E293B",
+    "usage": "dark error text",
+    "ratio": 5.29,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Success light / white",
+    "foreground": "#15803D",
+    "background": "#FFFFFF",
+    "usage": "light status text",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Error light / white",
+    "foreground": "#B91C1C",
+    "background": "#FFFFFF",
+    "usage": "light error text",
+    "ratio": 6.47,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "pair": "Turquoise / white — decorative only",
+    "foreground": "#20C5C7",
+    "background": "#FFFFFF",
+    "usage": "not permitted as small text or essential icon",
+    "ratio": 2.13,
+    "minimum": null,
+    "pass": null
+  }
+]
