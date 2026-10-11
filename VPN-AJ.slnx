@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/windows/">
+    <Project Path="apps/windows/AJ.VPN.Desktop/AJ.VPN.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/external/" />
+  <Folder Name="/external/v2rayN/" />
+  <Folder Name="/external/v2rayN/v2rayN/">
+    <Project Path="external/v2rayN/v2rayN/ServiceLib.UdpTest/ServiceLib.UdpTest.csproj" />
+    <Project Path="external/v2rayN/v2rayN/ServiceLib/ServiceLib.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AJ.VPN.Application/AJ.VPN.Application.csproj" />
+    <Project Path="src/AJ.VPN.Domain/AJ.VPN.Domain.csproj" />
+    <Project Path="src/AJ.VPN.Infrastructure/AJ.VPN.Infrastructure.csproj" />
+    <Project Path="src/AJ.VPN.V2RayNAdapter/AJ.VPN.V2RayNAdapter.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AJ.VPN.IntegrationTests/AJ.VPN.IntegrationTests.csproj" />
+    <Project Path="tests/AJ.VPN.UnitTests/AJ.VPN.UnitTests.csproj" />
+  </Folder>
+</Solution>

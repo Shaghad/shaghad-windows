@@ -1,0 +1,14 @@
+.tools/
+.research/
+**/bin/
+**/obj/
+artifacts/
+TestResults/
+*.user
+*.suo
+.vs/
+*.log
+guiConfigs/
+guiTemps/
+*.db
+*.db-*

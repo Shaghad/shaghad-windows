@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+ <sys:String x:Key="Dashboard">Dashboard</sys:String><sys:String x:Key="Servers">Servers</sys:String>
+ <sys:String x:Key="Subscriptions">Subscriptions</sys:String><sys:String x:Key="Routing">Routing</sys:String>
+ <sys:String x:Key="Statistics">Statistics</sys:String><sys:String x:Key="Diagnostics">Diagnostics</sys:String>
+ <sys:String x:Key="Settings">Settings</sys:String><sys:String x:Key="Exit">Exit</sys:String>
+ <sys:String x:Key="Disconnected">Disconnected</sys:String><sys:String x:Key="Connect">Connect — unavailable</sys:String>
+ <sys:String x:Key="Welcome">Your connection, clearly in view.</sys:String>
+ <sys:String x:Key="FoundationNotice">Development foundation · Core execution is unavailable. No network settings are changed.</sys:String>
+ <sys:String x:Key="SelectedServer">Selected server</sys:String><sys:String x:Key="NoServer">No server selected</sys:String>
+ <sys:String x:Key="NoMetrics">Network statistics are unavailable until a real core and traffic source are active.</sys:String>
+ <sys:String x:Key="CoreNotice">Import validation is available on Servers. Connecting requires a verified core and safe lifecycle integration.</sys:String>
+ <sys:String x:Key="Preview">Validate a server profile</sys:String><sys:String x:Key="Validate">Validate profile</sys:String>
+ <sys:String x:Key="PreviewNotice">Preview only. Credentials are kept in memory for validation, cleared afterward, and never saved.</sys:String>
+ <sys:String x:Key="EmptySubscriptions">No subscriptions. Secure credential storage and transactional updates are not implemented yet.</sys:String>
+ <sys:String x:Key="AddUnavailable">Add subscription — unavailable</sys:String>
+ <sys:String x:Key="RoutingUnavailable">Routing presets and advanced rules are unavailable until core capability validation is implemented.</sys:String>
+ <sys:String x:Key="RunChecks">Run local checks</sys:String><sys:String x:Key="Theme">Appearance</sys:String>
+ <sys:String x:Key="Language">Language</sys:String><sys:String x:Key="Save">Save preferences</sys:String>
+ <sys:String x:Key="CloseNotice">Closing the window exits VPN-AJ. Tray, autostart, TUN and System Proxy are unavailable in this milestone.</sys:String>
+</ResourceDictionary>

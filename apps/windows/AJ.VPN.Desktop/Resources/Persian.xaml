@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+ <sys:String x:Key="Dashboard">داشبورد</sys:String><sys:String x:Key="Servers">سرورها</sys:String>
+ <sys:String x:Key="Subscriptions">اشتراک‌ها</sys:String><sys:String x:Key="Routing">مسیریابی</sys:String>
+ <sys:String x:Key="Statistics">آمار</sys:String><sys:String x:Key="Diagnostics">عیب‌یابی</sys:String>
+ <sys:String x:Key="Settings">تنظیمات</sys:String><sys:String x:Key="Exit">خروج</sys:String>
+ <sys:String x:Key="Disconnected">قطع اتصال</sys:String><sys:String x:Key="Connect">اتصال — در دسترس نیست</sys:String>
+ <sys:String x:Key="Welcome">وضعیت اتصال شما، روشن و ساده.</sys:String>
+ <sys:String x:Key="FoundationNotice">نسخه پایه توسعه · اجرای هسته در دسترس نیست. تنظیمات شبکه تغییر نمی‌کند.</sys:String>
+ <sys:String x:Key="SelectedServer">سرور انتخاب‌شده</sys:String><sys:String x:Key="NoServer">سروری انتخاب نشده است</sys:String>
+ <sys:String x:Key="NoMetrics">آمار شبکه پس از فعال شدن هسته واقعی و منبع ترافیک در دسترس خواهد بود.</sys:String>
+ <sys:String x:Key="CoreNotice">اعتبارسنجی در صفحه سرورها فعال است. اتصال به هسته تأییدشده و مدیریت امن چرخه اجرا نیاز دارد.</sys:String>
+ <sys:String x:Key="Preview">اعتبارسنجی پیکربندی سرور</sys:String><sys:String x:Key="Validate">اعتبارسنجی</sys:String>
+ <sys:String x:Key="PreviewNotice">فقط پیش‌نمایش. اطلاعات محرمانه پس از اعتبارسنجی پاک می‌شود و ذخیره نمی‌شود.</sys:String>
+ <sys:String x:Key="EmptySubscriptions">اشتراکی وجود ندارد. ذخیره امن اطلاعات و به‌روزرسانی تراکنشی هنوز پیاده‌سازی نشده است.</sys:String>
+ <sys:String x:Key="AddUnavailable">افزودن اشتراک — در دسترس نیست</sys:String>
+ <sys:String x:Key="RoutingUnavailable">مسیریابی تا پیاده‌سازی اعتبارسنجی قابلیت‌های هسته در دسترس نیست.</sys:String>
+ <sys:String x:Key="RunChecks">بررسی محلی</sys:String><sys:String x:Key="Theme">ظاهر</sys:String>
+ <sys:String x:Key="Language">زبان</sys:String><sys:String x:Key="Save">ذخیره تنظیمات</sys:String>
+ <sys:String x:Key="CloseNotice">بستن پنجره باعث خروج می‌شود. سینی سیستم، شروع خودکار، TUN و پروکسی سیستم فعلاً در دسترس نیست.</sys:String>
+</ResourceDictionary>
