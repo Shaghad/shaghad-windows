@@ -2,7 +2,7 @@
 
 Date: 2026-10-11. Product: **SHAGHAD | شغاد**, **Modern Secure Network Client**.
 
-The identity pairs a geometric Persian sheen with quiet desktop typography. The open bowl and connected teeth express a continuous path; three dots provide recognition without an illustrative historical motif. The literary name is an origin, not an endorsement of the character's conduct. No portrait or symbolism implying that Shaghad was a guardian is used.
+The identity pairs the refined **Concept C angular monogram** with quiet desktop typography. A balanced S references SHAGHAD; three centered square dots retain a subtle connection to Persian ش without an illustrative historical motif. The user selected C after reviewing the three concepts. Its refinement preserves that direction while balancing the arms, opening negative space and improving dot spacing. The literary name is an origin, not an endorsement of the character's conduct. No portrait or symbolism implying that Shaghad was a guardian is used.
 
 Brand behavior: clear state, readable language, restrained accent use and honest availability. The current development application cannot establish a VPN connection, so its dashboard shows Disconnected, unavailable controls and em dashes for missing telemetry. Brand presentation must never be used as proof of security or a connected state.
 

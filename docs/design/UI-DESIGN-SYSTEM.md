@@ -55,4 +55,4 @@ Native ComboBox and TabControl chrome is retained rather than replacing their in
 
 ## Evidence
 
-`D:\VPN-AJ\artifacts\shaghad-smoke\` contains actual WPF RenderTargetBitmap output for eight pages, dark dashboard, Persian dashboard and license dialog. These are programmatic UI renders, not desktop screenshots. `D:\VPN-AJ\docs\design\evidence\windows-dashboard-2026-10-11.png` is an actual running-window capture made with the computer-use runtime. Brand boards under `branding/previews` are designed identity previews.
+`D:\VPN-AJ\artifacts\shaghad-smoke\` contains actual WPF RenderTargetBitmap output for eight pages, dark dashboard, Persian dashboard and license dialog. These are programmatic UI renders, not desktop screenshots. `D:\VPN-AJ\docs\design\evidence\windows-concept-c-2026-10-11.png` is the actual running-window capture with refined C, made with the computer-use runtime. The original A-identity capture, `windows-dashboard-2026-10-11.png`, is retained as historical evidence. Brand boards under `branding/previews` are designed identity previews.

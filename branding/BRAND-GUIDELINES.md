@@ -1,10 +1,10 @@
 # SHAGHAD | شغاد
 
-Modern Secure Network Client. Identity version 1.0, 11 October 2026.
+Modern Secure Network Client. Identity version 1.1, 11 October 2026.
 
 SHAGHAD draws its name from Ferdowsi's Shahnameh. The identity references the Persian letter **ش**, not the character's actions. It makes no claim that Shaghad represented trust or protection. The product earns reliability through its behavior.
 
-The selected symbol is Concept A, Persian Minimal: an open connected stroke, three upright teeth, and three separate dots. Its geometry was drawn for this project. No upstream logo, shield, lock, globe, historical portrait or ornamental motif is used. The wordmark is original vector lettering; interface labels use native typography.
+The selected symbol is **Concept C, Premium Monogram (refined)**: an angular S with balanced arms and three centered square dots. The dots are a subtle reference to ش. The body has 180-degree rotational balance around (256,288); slightly lighter strokes open its counters. Its geometry was drawn for this project. No upstream logo, shield, lock, globe, historical portrait or ornamental motif is used. The wordmark is original vector lettering; interface labels use native typography.
 
 ## Assets and placement
 
@@ -18,8 +18,9 @@ The selected symbol is Concept A, Persian Minimal: an open connected stroke, thr
 | Application / tray icon | `icons/shaghad-app-icon.svg`, `icons/shaghad.ico` |
 | Raster exports | `icons/shaghad-{16,24,32,48,64,128,256,512}.png` |
 | Concept comparison / selected identity boards | `previews/concepts-preview.png`, `previews/dark-preview.png`, `previews/light-preview.png` |
+| Concept C before/after | `previews/concept-c-refinement.png`; original source retained as `concepts/concept-c-original.svg` |
 
-The symbol uses a 512-unit square viewBox. Keep the entire square when preparing app icons. For independent placement allow at least 44 design units of clear space outside the painted mark. Keep the three dots; do not connect, rotate, mirror, stretch, add a shield or add shadows within the symbol. RTL layouts move the navigation, but the logo retains its original orientation.
+The symbol uses a 512-unit square viewBox, a 48-unit main stroke and three 40-unit squares separated by 24 units. Keep the entire square when preparing app icons. For independent placement allow at least 48 design units of clear space outside the painted mark. Keep the three dots; do not connect, rotate, mirror, stretch, add a shield or add shadows within the symbol. RTL layouts move the navigation, but the logo retains its original orientation.
 
 Use the application icon at 16 px and above. At 16 px use the supplied raster, which preserves the dots with antialiasing; never add text. Use a horizontal wordmark at 160 px or wider, and keep product descriptions as separate readable text. The 512 PNG is intended for large previews and future platform export; Android adaptive masks and macOS icon containers are not implemented.
 

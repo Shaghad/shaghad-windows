@@ -1,6 +1,6 @@
 # SHAGHAD BRANDING REPORT
 
-11 October 2026. Implemented in **D:\VPN-AJ**. Selected identity: **Concept A — Persian Minimal**. This is a completed branding milestone on an existing development foundation, not a production VPN release.
+11 October 2026. Implemented in **D:\VPN-AJ**. Selected identity: **Concept C — Premium Monogram (refined)**, following the user's selection. This is a completed branding milestone on an existing development foundation, not a production VPN release.
 
 ## 1. Existing Project Analysis
 
@@ -12,7 +12,7 @@ The existing solution, internal AJ.VPN namespaces, project paths, parser, diagno
 
 - **A — Persian Minimal:** open geometric ش, connected rounded stroke and three triangular dots.
 - **B — Network Geometry:** angular letterform with explicit linked nodes.
-- **C — Premium Monogram:** compact angular S-derived construction with three square dots.
+- **C — Premium Monogram, refined:** balanced angular S-derived construction with three centered square dots. Original C is retained as `concept-c-original.svg`.
 
 Editable sources: `D:\VPN-AJ\branding\concepts\concept-a.svg`, `concept-b.svg`, `concept-c.svg`.
 
@@ -20,7 +20,7 @@ Visual comparison: `D:\VPN-AJ\branding\previews\concepts-preview.png` and `.svg`
 
 ## 3. Selected Logo and Rationale
 
-**A** best balances Persian letter recognition, negative space and small-size clarity. The connected bowl/teeth suggest continuity without needing a network diagram. B adds detail; C weakens the preferred Persian association. The literary origin does not imply that Shaghad symbolized trust or protection.
+**C** is the user's chosen direction. Its angular S and square-dot character are preserved, with equal arms, a 48-unit stroke, more open counters and three 40-unit dots centered on a 64-unit rhythm. The three dots retain a subtle Persian reference. The literary origin does not imply that Shaghad symbolized trust or protection. Before/after: `D:\VPN-AJ\branding\previews\concept-c-refinement.png`.
 
 Primary master: `D:\VPN-AJ\branding\logo\shaghad-symbol.svg`. Geometry and assessment: `D:\VPN-AJ\docs\design\LOGO-DESIGN.md`.
 
@@ -47,11 +47,12 @@ Persian RTL moves navigation to the right. Logos, URLs, versions, profile URIs a
 | Real seven-frame ICO | `D:\VPN-AJ\branding\icons\shaghad.ico` |
 | Three-concept comparison | `D:\VPN-AJ\branding\previews\concepts-preview.png` |
 | Dark / light identity boards | `D:\VPN-AJ\branding\previews\dark-preview.png`, `light-preview.png` |
+| C refinement comparison | `D:\VPN-AJ\branding\previews\concept-c-refinement.png`, `.svg`; original study in `D:\VPN-AJ\branding\concepts\concept-c-original.svg` |
 | Hash manifest | `D:\VPN-AJ\branding\asset-manifest.json` |
 | Guidelines | `D:\VPN-AJ\branding\BRAND-GUIDELINES.md` |
 | Export / asset validation | `D:\VPN-AJ\scripts\export-branding.cjs`, `validate-branding.ps1` |
 
-13 SVG documents, eight icon PNG sizes, three preview PNGs and a genuine ICO were generated, totaling 25 manifest assets. SVG wordmarks remain vectors. Raster exports use local sharp/librsvg. Generated SVG line endings are pinned to LF with `.gitattributes` so hashes survive Windows checkout.
+15 SVG documents, eight icon PNG sizes, four preview PNGs and a genuine ICO were generated, totaling 28 manifest assets. SVG wordmarks remain vectors. Raster exports use local sharp/librsvg. Generated SVG line endings are pinned to LF with `.gitattributes` so hashes survive Windows checkout.
 
 ## 7. Windows UI Changes
 
@@ -81,14 +82,14 @@ Executed with workspace-local .NET SDK 10.0.401 and the repository scripts on Wi
 |---|---|
 | `scripts/build.ps1` (restore + Release solution build) | Passed, zero warnings/errors |
 | `scripts/test.ps1` | 11 passed: 3 unit + 8 integration, zero failures/skips |
-| `scripts/validate-branding.ps1` | Passed: 13 SVG XML documents, PNG dimensions, seven ICO payloads, System.Drawing frame selection 16–128, 25 SHA-256 asset hashes and required contrast pairs |
+| `scripts/validate-branding.ps1` | Passed for refined C: 15 SVG XML documents, PNG dimensions, seven ICO payloads, System.Drawing frame selection 16–128, 28 SHA-256 asset hashes and required contrast pairs |
 | `scripts/smoke-test.ps1` | Passed: WPF startup/DI, eight pages, dark/Persian RTL, embedded Vazirmatn resolution, all seven WPF ICO frames through 256, tray icon decode and actual About menu callback, GPL/OFL viewer |
 | `scripts/publish.ps1` | Passed: framework-dependent win-x64 output with SHAGHAD executable and legal/font notices |
 | Live application check | SHAGHAD window and small title-bar icon visible; Dashboard/About navigation and license dialog opened; explicit Exit completed |
 
-Regression evidence: `D:\VPN-AJ\artifacts\TestResults\Victus_AJ-VICTUS_2026-10-11_19_48_08_net10.0.trx` and the corresponding `[1].trx`. WPF evidence: `D:\VPN-AJ\artifacts\shaghad-smoke\result.txt` and page PNGs. These are intentionally ignored generated outputs.
+Regression evidence for refined C: `D:\VPN-AJ\artifacts\TestResults\Victus_AJ-VICTUS_2026-10-11_19_57_15_net10.0.trx` and the corresponding `[1].trx`. WPF evidence: `D:\VPN-AJ\artifacts\shaghad-smoke\result.txt` and page PNGs. Release build (zero warnings/errors), all 11 existing tests, WPF smoke and development publish were rerun successfully after the Concept C switch. These are intentionally ignored generated outputs.
 
-Actual running-window screenshot: **D:\VPN-AJ\docs\design\evidence\windows-dashboard-2026-10-11.png**, captured using the computer-use skill. This is distinct from brand design boards in `branding/previews` and programmatic WPF renders in `artifacts/shaghad-smoke`.
+Actual running-window screenshot with refined C: **D:\VPN-AJ\docs\design\evidence\windows-concept-c-2026-10-11.png**, captured using the computer-use skill in the Persian/dark interface. The initial A-identity screenshot is retained as `windows-dashboard-2026-10-11.png` for history. Both are distinct from brand design boards in `branding/previews` and programmatic WPF renders in `artifacts/shaghad-smoke`.
 
 An initial About Run.Text binding attempted a TwoWay update to a read-only property; fixed to OneWay and startup revalidated. Visual review found clipped explanatory text and cached logo tint during theme replacement; both were corrected. A later build briefly encountered the running development executable's file lock; the app was exited and the final build completed without warnings. No failed check is being reported as a pass.
 
