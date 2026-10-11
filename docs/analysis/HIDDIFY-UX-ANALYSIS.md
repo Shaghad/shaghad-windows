@@ -12,4 +12,13 @@ The adaptive shell handles breakpoints, keyboard focus movement and navigation s
 
 Automatic selection and latency are advertised in upstream README; delay indication is visible in the reviewed home source. Automatic selection accuracy, subscription expiration/traffic interpretation, settings information hierarchy, contrast, touch target sizes and error recovery have not been interactively audited. These are review gaps, not proven strengths. Follow-up review should inspect profile/update flows, proxy sorting and settings widgets and run the reference application. VPN-AJ will display provider quotas only when supplied, distinguish probe types, and avoid unexplained automatic switching.
 
+Additional full-checkout inspection confirmed these flows:
+
+- profile/details/profile_details_page.dart renders provider upload/download/total and expiration fields; profile/widget/profile_tile.dart supplies remaining-time/traffic semantics, updating indicators and tooltips. Provider metadata is useful context; interpretation and absent-header behavior still need runtime checks.
+- profile/notifier/profiles_update_notifier.dart schedules a foreground worker every 15 minutes with a five-minute task timeout, then honors each remote profile's update interval. VPN-AJ should expose update state and preserve previous usable data on failure.
+- proxy/overview/proxies_overview_notifier.dart persists sort mode (default delay), reports ServiceNotRunning when inactive and sorts observed outbound groups. proxies_overview_page.dart exposes urlTest("select"). These are proxy-oriented probes, not evidence from ICMP alone.
+- settings/overview/settings_page.dart includes confirmed import actions and distinguishes anonymous export from export containing private data. General, inbound, DNS, routing and TLS sections are separate pages. This reduces density but increases navigation depth; VPN-AJ should place ordinary settings before expert controls.
+- home/widget/connection_button.dart displays a connected core with invalid delay as “connecting,” and changes behavior for hot reload/reconnect. That can blur process state and verified connectivity. VPN-AJ should show these as separate facts.
+- EmptyProfilesHomeBody offers an add-profile action. Adaptive layout contains focus routing and responsive shell branches. Their real reachability, keyboard order, contrast and assistive-technology performance remain untested.
+
 License review is recorded separately; no Hiddify reuse is authorized by this design review.

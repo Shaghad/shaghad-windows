@@ -6,3 +6,5 @@
 - ServiceLib transitive dependencies listed in docs/analysis/V2RAYN-ANALYSIS.md. Complete native/transitive notice manifest is pending; do not distribute this inventory as a compliance-complete release.
 - Hiddify: UX research reference only. No distributed code or assets.
 - Xray/sing-box: no bundled binaries. Exact binary/source/data notices pending engine selection.
+
+Resolved desktop package versions, license declarations and copyright metadata are in NUGET-LICENSE-INVENTORY.md. sqlite-net-e embeds MIT terms with Copyright (c) Krueger Systems, Inc. Native library and SDK notices remain required at release packaging time.

@@ -8,9 +8,9 @@ Verified 2026-10-11 through https://api.github.com/repos/2dust/v2rayN/releases/l
 | Persistence | ServiceLib/Handler/ConfigHandler.cs LoadConfig/SaveConfig; AppManager creates SubItem/ProfileItem/ServerStatItem/RoutingItem/ProfileExItem/DNSItem/FullConfigTemplateItem SQLite tables | path isolation and encrypted secrets needed |
 | Initialization | MainWindowViewModel.Init initializes ProfileExManager, CoreManager, CertPemManager and StatisticsManager, then Reload | reproduce required sequence in adapter only after isolation |
 | Core configuration | Handler/Builder/CoreConfigContextBuilder resolves immutable context, DNS/routing and validators; CoreConfigHandler dispatches generators | reuse with typed error translation |
-| Xray | Services/CoreConfig/CoreConfigV2rayService and Statistics/StatisticsXrayService; CoreInfoManager identifies executable/arguments | reuse config generation, engine remains external |
-| sing-box | Services/CoreConfig/CoreConfigSingboxService, sample DNS/TUN resources, StatisticsSingboxService | reuse supported options after version checks |
-| Process lifecycle | CoreManager.LoadCore generates config, CoreStop, starts main and optional pre-core; ProcessService wraps CliWrap; WindowsJobService owns handles | readiness/exit monitoring and cancellation adapter needed |
+| Xray | Services/CoreConfig/V2ray/CoreConfigV2rayService and Services/Statistics/StatisticsXrayService; CoreInfoManager identifies executable/arguments | reuse config generation, engine remains external |
+| sing-box | Services/CoreConfig/Singbox/CoreConfigSingboxService, sample DNS/TUN resources, StatisticsSingboxService | reuse supported options after version checks |
+| Process lifecycle | CoreManager.LoadCore generates config, CoreStop, starts main and optional pre-core; ProcessService uses System.Diagnostics.Process and string arguments; WindowsJobService owns handles | readiness/exit monitoring, safe arguments and cancellation adapter needed |
 | Subscriptions | SubscriptionHandler.UpdateProcess downloads main/additional URLs, optionally uses conversion service, then imports through ConfigHandler; exceptions logged | disallow external conversion by default; redact callbacks; transactional update review |
 | Import/export | Handler/Fmt/FmtHandler.ResolveConfig and GetShareUri dispatch protocol-specific formatters; AddBatchServers handles batches | reuse parsers; validate size/scheme first |
 | Selection | ConfigHandler.SetDefaultServerIndex/GetDefaultServer, ProfilesViewModel orchestration | map ID to portable Server metadata |
