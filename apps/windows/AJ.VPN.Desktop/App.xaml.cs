@@ -35,14 +35,15 @@ public partial class App : System.Windows.Application
         { Shutdown(OwnedCoreProcess.SignalConsoleGroup(pid) ? 0 : 1); return; }
         if (e.Args.Length == 2 && e.Args[0] == "--core-self-test")
         { try { await CoreSelfTest.RunAsync(Path.GetFullPath(e.Args[1])); Shutdown(0); } catch { Shutdown(1); } return; }
-        var smoke = e.Args.Length == 2 && (e.Args[0] == "--smoke-test" || e.Args[0] == "--premium-live-test");
+        var smoke = e.Args.Length == 2 && (e.Args[0] == "--smoke-test" || e.Args[0] == "--premium-live-test" || e.Args[0] == "--auto-selection-self-test")
+            || e.Args.Length == 3 && e.Args[0] == "--authorized-auto-test";
         try { await InitializeAsync(e, smoke); }
         catch (Exception ex)
         {
             if (smoke)
             {
-                Directory.CreateDirectory(Path.GetFullPath(e.Args[1]));
-                File.WriteAllText(Path.Combine(e.Args[1], "failure.txt"), ex.ToString());
+                Directory.CreateDirectory(Path.GetFullPath(e.Args[^1]));
+                File.WriteAllText(Path.Combine(e.Args[^1], "failure.txt"), ex.ToString());
             }
             else MessageBox.Show("SHAGHAD could not initialize. Another instance may be using this Windows user's data, or private storage may be unavailable. Existing data was preserved.", "SHAGHAD", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
@@ -55,6 +56,7 @@ public partial class App : System.Windows.Application
         ProtectedFiles.CreatePrivateDirectory(data);
         instanceLock = new FileStream(Path.Combine(data, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         LocalProxyBackend.CleanupAbandonedSessions(data);
+        IsolatedCandidateTester.CleanupAbandonedSessions(data);
         var coreDirectory = Path.Combine(AppContext.BaseDirectory, "cores");
         services = new ServiceCollection()
             .AddLogging(builder => builder.AddProvider(new SafeFileLoggerProvider(Path.Combine(data, "logs"))))
@@ -65,6 +67,11 @@ public partial class App : System.Windows.Application
             .AddSingleton<LibraryService>()
             .AddSingleton<ICoreConfigurationGenerator, ServiceLibConfigurationGenerator>()
             .AddSingleton<ICoreCatalog>(new TrustedCoreCatalog(coreDirectory))
+            .AddSingleton<INetworkContext, NetworkContext>()
+            .AddSingleton<ICandidateTester>(sp => new IsolatedCandidateTester(sp.GetRequiredService<ICoreCatalog>(),
+                sp.GetRequiredService<ICoreConfigurationGenerator>(), sp.GetRequiredService<IProfileValidator>(), data,
+                Path.Combine(AppContext.BaseDirectory, "Shaghad.exe"), sp.GetRequiredService<ILogger<LocalProxyBackend>>()))
+            .AddSingleton<ServerSelectionService>()
             .AddSingleton<LocalProxyBackend>(sp => new(sp.GetRequiredService<LibraryService>(), sp.GetRequiredService<ICoreCatalog>(), sp.GetRequiredService<ICoreConfigurationGenerator>(), data,
                 Path.Combine(AppContext.BaseDirectory, "Shaghad.exe"), sp.GetRequiredService<ILogger<LocalProxyBackend>>()))
             .AddSingleton<ILocalProxyBackend>(sp => sp.GetRequiredService<LocalProxyBackend>())
@@ -83,7 +90,9 @@ public partial class App : System.Windows.Application
         MainWindow = services.GetRequiredService<MainWindow>();
         if (smoke)
         {
-            if (e.Args[0] == "--premium-live-test") await PremiumLiveTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
+            if (e.Args[0] == "--authorized-auto-test") await AuthorizedAutoSelectionTest.RunAsync(MainWindow, vm, services.GetRequiredService<LocalProxyBackend>(), Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2]), ApplyAppearance);
+            else if (e.Args[0] == "--auto-selection-self-test") await AutoSelectionSelfTest.RunAsync(MainWindow, vm, services.GetRequiredService<LocalProxyBackend>(), Path.GetFullPath(e.Args[1]), ApplyAppearance);
+            else if (e.Args[0] == "--premium-live-test") await PremiumLiveTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
             else await SmokeTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
             Shutdown(0);
             return;

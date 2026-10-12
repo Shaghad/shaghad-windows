@@ -11,6 +11,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel; Resources["NavigationIconMargin"] = new Thickness(0,0,12,0);
+        viewModel.CountryEditRequested += (_, id) => OpenCountryEditor(id);
         SourceInitialized += (_, _) => UpdateNativeCaption();
         UpdateLayoutDensity();
         SizeChanged += (_, _) => UpdateLayoutDensity();
@@ -85,16 +86,32 @@ public partial class MainWindow : Window
     private static extern int DwmSetWindowAttribute(IntPtr window, int attribute, ref int value, int size);
 
     internal void OpenImport(object sender, RoutedEventArgs e)
+        => ShowImportEditor(false);
+    private void OpenClipboardImport(object sender, RoutedEventArgs e) => ShowImportEditor(true);
+    private void OpenToolbarMenu(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { ContextMenu: { } menu } button) { menu.PlacementTarget = button; menu.IsOpen = true; }
+    }
+    private void OpenCountryEditor(string id)
+    {
+        var vm = (ShellViewModel)DataContext;
+        var input = new System.Windows.Controls.TextBox { MaxLength = 2, Text = vm.ServerRows.First(r => r.Server.Id == id).Server.Country ?? "", FlowDirection = FlowDirection.LeftToRight };
+        var save = new System.Windows.Controls.Button { Content = FindResource("Save") };
+        save.Click += async (_, _) => { try { await vm.SaveCountryAsync(id, input.Text); } catch { MessageBox.Show(this, FindResource("CountryCodeHint").ToString()); } };
+        ShowEditor(FindResource("SetCountry").ToString()!, [new System.Windows.Controls.TextBlock { Text = FindResource("CountryCodeHint").ToString() }, input, save]);
+    }
+    private void ShowImportEditor(bool clipboard)
     {
         var vm = (ShellViewModel)DataContext;
         if (!vm.CanEdit) return;
         vm.PrepareImport();
+        if (clipboard) vm.ProfileInput = System.Windows.Clipboard.GetText();
         var input = new System.Windows.Controls.TextBox { AcceptsReturn = true, Height = 160, MaxLength = 2_000_000, VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto, FlowDirection = FlowDirection.LeftToRight };
         input.SetBinding(System.Windows.Controls.TextBox.TextProperty, new System.Windows.Data.Binding("ProfileInput") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
         var button = new System.Windows.Controls.Button { Content = FindResource("Validate"), Command = vm.ValidateCommand, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,16,0,8) };
         var status = new System.Windows.Controls.TextBlock();
         status.SetBinding(System.Windows.Controls.TextBlock.TextProperty, "ProfileResult");
-        ShowEditor("Import server profiles", [new System.Windows.Controls.TextBlock { Text = FindResource("PreviewNotice").ToString(), Margin = new Thickness(0,0,0,16) }, input, button, status]);
+        ShowEditor(FindResource("ImportServer").ToString()!, [new System.Windows.Controls.TextBlock { Text = FindResource("PreviewNotice").ToString(), Margin = new Thickness(0,0,0,16) }, input, button, status]);
         vm.ProfileInput = "";
     }
     internal void OpenSubscription(object sender, RoutedEventArgs e)

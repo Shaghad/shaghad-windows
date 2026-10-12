@@ -1,0 +1,18 @@
+{
+  "Scope": "Profiles matching the user\u0027s authorized German server display name; not the entire provider subscription",
+  "MatchedProfiles": 1,
+  "AutoResolvedHealthyCandidate": true,
+  "DashboardAutoConnectionHttpsVerified": true,
+  "ActivePidAndPortPreservedByTestAll": true,
+  "PublicExitIpMeasured": true,
+  "WindowsProxyUnchanged": true,
+  "Measurements": [
+    {
+      "Health": "Healthy",
+      "Milliseconds": 2389,
+      "SuccessfulAttempts": 2
+    }
+  ],
+  "CountrySource": "Unknown unless explicitly assigned; display-name emoji is not geographic evidence",
+  "SourceEncryptedLibraryChanged": false
+}

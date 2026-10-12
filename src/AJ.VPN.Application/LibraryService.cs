@@ -16,6 +16,21 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         finally { gate.Release(); }
     }
     public SavedProfile? Active => Current.Profiles.Find(p => p.Server.Id == Current.ActiveId);
+    public Task SetSelectionModeAsync(SelectionMode mode, CancellationToken token = default) => MutateAsync(l =>
+        Enum.IsDefined(mode) ? l with { SelectionMode = mode } : throw new InvalidDataException("Invalid selection mode."), token);
+    public Task ToggleFavoriteAsync(string id, CancellationToken token = default) => MutateAsync(l => l with
+    {
+        Profiles = l.Profiles.Select(p => p.Server.Id == id ? p with { IsFavorite = !p.IsFavorite } : p).ToList()
+    }, token);
+    public Task SetCountryAsync(string id, string? country, CancellationToken token = default)
+    {
+        var code = country?.Trim().ToUpperInvariant();
+        if (!string.IsNullOrEmpty(code) && !System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes.SpecificCultures)
+            .Any(c => new System.Globalization.RegionInfo(c.Name).TwoLetterISORegionName == code))
+            throw new InvalidDataException("Choose an ISO country code or leave it blank.");
+        return MutateAsync(l => l with { Profiles = l.Profiles.Select(p => p.Server.Id == id
+            ? p with { Server = p.Server with { Country = string.IsNullOrEmpty(code) ? null : code } } : p).ToList() }, token);
+    }
     public string? CoreCompatibilityError(SavedProfile profile, CoreKind kind) => validator.CoreCompatibilityError(profile.ShareUri, kind);
     public IReadOnlyList<SavedProfile> Parse(string input, string? subscriptionId = null, CancellationToken token = default)
     {
@@ -43,7 +58,8 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         var added = await Task.Run(() => Parse(input, token: token), token);
         await MutateAsync(l =>
         {
-            var profiles = l.Profiles.Concat(added.Where(a => !l.Profiles.Any(p => p.ShareUri == a.ShareUri))).ToList();
+            var existing = l.Profiles.Select(p => ProfileIdentity.Of(p.ShareUri)).ToHashSet(StringComparer.Ordinal);
+            var profiles = l.Profiles.Concat(added.Where(a => existing.Add(ProfileIdentity.Of(a.ShareUri)))).ToList();
             if (profiles.Count > 5000) throw new InvalidDataException("The server library is full.");
             return l with { Profiles = profiles, ActiveId = l.ActiveId ?? profiles.FirstOrDefault(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null)?.Server.Id };
         }, token);
@@ -90,12 +106,17 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
         await MutateAsync(l =>
         {
             if (!l.Subscriptions.Any(s => s.Id == id && s.Url == sub.Url)) throw new InvalidDataException("Subscription changed during download.");
-            var profiles = l.Profiles.Where(p => p.SubscriptionId != id).Concat(added).ToList();
+            var old = l.Profiles.Where(p => p.SubscriptionId == id).GroupBy(p => ProfileIdentity.Of(p.ShareUri)).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            var retained = l.Profiles.Where(p => p.SubscriptionId != id).ToList();
+            var replacement = added.Select(p => old.TryGetValue(ProfileIdentity.Of(p.ShareUri), out var prior) ? p with
+                { Server = p.Server with { Id = prior.Server.Id, Country = prior.Server.Country }, IsFavorite = prior.IsFavorite } : p);
+            var identities = retained.Select(p => ProfileIdentity.Of(p.ShareUri)).ToHashSet(StringComparer.Ordinal);
+            var profiles = retained.Concat(replacement.Where(p => identities.Add(ProfileIdentity.Of(p.ShareUri)))).ToList();
             if (profiles.Count > 5000) throw new InvalidDataException("The server library is full.");
-            // Preserve selection when the same share link survives an update.
+            // Preserve selection when the same wire configuration survives, including renamed remarks.
             var selectedUri = l.Profiles.Find(p => p.Server.Id == l.ActiveId)?.ShareUri;
             var compatible = profiles.Where(p => validator.CoreCompatibilityError(p.ShareUri, l.Core) == null).ToList();
-            return l with { Profiles = profiles, ActiveId = compatible.Find(p => p.ShareUri == selectedUri)?.Server.Id ?? compatible.FirstOrDefault()?.Server.Id,
+            return l with { Profiles = profiles, ActiveId = compatible.Find(p => selectedUri != null && ProfileIdentity.Of(p.ShareUri) == ProfileIdentity.Of(selectedUri))?.Server.Id ?? compatible.FirstOrDefault()?.Server.Id,
                 Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { UpdatedAt = DateTimeOffset.UtcNow, RemainingBytes = download.RemainingBytes, ExpiresAt = download.ExpiresAt } : s).ToList() };
         }, token);
     }

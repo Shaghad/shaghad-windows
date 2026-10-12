@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Resource Include="Assets\Flags\*.png" />
     <ProjectReference Include="..\..\..\src\AJ.VPN.Infrastructure\AJ.VPN.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\src\AJ.VPN.V2RayNAdapter\AJ.VPN.V2RayNAdapter.csproj" />
   </ItemGroup>
@@ -18,7 +19,7 @@
     <AssemblyTitle>SHAGHAD</AssemblyTitle>
     <Product>SHAGHAD</Product>
     <Description>Modern Secure Network Client</Description>
-    <Version>0.2.0</Version>
+    <Version>0.4.0</Version>
     <ApplicationIcon>..\..\..\branding\icons\shaghad.ico</ApplicationIcon>
   </PropertyGroup>
 

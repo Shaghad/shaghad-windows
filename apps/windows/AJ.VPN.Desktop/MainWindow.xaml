@@ -1,5 +1,5 @@
 <Window x:Class="AJ.VPN.Desktop.MainWindow"
- xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AJ.VPN.Desktop"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:AJ.VPN.Desktop" xmlns:controls="clr-namespace:AJ.VPN.Desktop.Controls"
  Title="SHAGHAD" Icon="Assets/shaghad.ico" Width="1200" Height="760" MinWidth="960" MinHeight="540"
  FlowDirection="LeftToRight" WindowStyle="SingleBorderWindow" ResizeMode="CanResize"
  FontFamily="{DynamicResource UiFont}" FontSize="14" WindowStartupLocation="CenterScreen" Background="{DynamicResource PageBrush}" Foreground="{DynamicResource TextBrush}">
@@ -7,6 +7,40 @@
   <local:NavigationMatchConverter x:Key="NavigationMatch"/>
   <Style x:Key="Page" TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/></Style>
   <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
+  <DataTemplate x:Key="ServersPageTemplate">
+   <Grid FlowDirection="LeftToRight">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,10"><TextBlock DockPanel.Dock="Right" Text="{Binding TotalServersDisplay}" Margin="24,0,0,0" Style="{StaticResource SecondaryText}" VerticalAlignment="Center"/><TextBlock Text="{DynamicResource Servers}" Style="{StaticResource Heading}" Margin="0"/></DockPanel>
+    <Grid Grid.Row="1" Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <Grid Margin="0,2,12,2"><TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Padding="12,6" ToolTip="{DynamicResource SearchLabel}" AutomationProperties.Name="{DynamicResource SearchLabel}"/><TextBlock Text="{DynamicResource SearchLabel}" Margin="12,0" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Search}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></Grid>
+     <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="{DynamicResource ImportServer}" Click="OpenImport" IsEnabled="{Binding CanEdit}" Style="{StaticResource ShaghadPrimaryButton}"/><Button Content="{DynamicResource ClipboardImport}" Click="OpenClipboardImport" IsEnabled="{Binding CanEdit}"/><Button Content="{DynamicResource TestAllLabel}" Command="{Binding TestAllCommand}" IsEnabled="{Binding CanTest}"/>
+      <Button Content="{DynamicResource SortLabel}" Click="OpenToolbarMenu" Margin="0,2,0,2"><Button.ContextMenu><ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}">
+       <MenuItem Header="{DynamicResource LowestLatencySort}" Command="{Binding SortServersCommand}" CommandParameter="LowestLatency"/><MenuItem Header="{DynamicResource HighestLatencySort}" Command="{Binding SortServersCommand}" CommandParameter="HighestLatency"/><MenuItem Header="{DynamicResource NameLabel}" Command="{Binding SortServersCommand}" CommandParameter="Name"/><MenuItem Header="{DynamicResource CountryLabel}" Command="{Binding SortServersCommand}" CommandParameter="Country"/><MenuItem Header="{DynamicResource ProtocolLabel}" Command="{Binding SortServersCommand}" CommandParameter="Protocol"/><MenuItem Header="{DynamicResource LastTestedLabel}" Command="{Binding SortServersCommand}" CommandParameter="LastTested"/>
+      </ContextMenu></Button.ContextMenu></Button>
+     </StackPanel>
+    </Grid>
+    <Border Grid.Row="2" CornerRadius="12" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="14,10" Margin="0,0,0,10">
+     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <StackPanel><DockPanel><TextBlock Text="&#xE945;" FontFamily="Segoe MDL2 Assets" Foreground="{DynamicResource SymbolBrush}" Margin="0,0,10,0" FontSize="22"/><TextBlock Text="{DynamicResource AutoTitle}" FontSize="18" FontWeight="SemiBold" Style="{StaticResource LocalizedText}"/></DockPanel>
+       <TextBlock Text="{DynamicResource AutoHint}" Style="{StaticResource SecondaryText}" FontSize="12" Margin="0,3"/>
+       <DockPanel><TextBlock Text="{Binding AutoServerDisplay}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" ToolTip="{Binding AutoServerDisplay}"/><TextBlock Text="{Binding AutoLatencyDisplay}" Margin="12,0,0,0" Foreground="{DynamicResource SymbolBrush}" FlowDirection="LeftToRight"/></DockPanel>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0"><Button Content="{DynamicResource EnableAuto}" Command="{Binding AutoCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource ShaghadPrimaryButton}"/><Button Content="{DynamicResource RetestLabel}" Command="{Binding TestAllCommand}" IsEnabled="{Binding CanTest}"/><Button Content="{DynamicResource ManualMode}" Command="{Binding ManualCommand}" IsEnabled="{Binding CanEdit}" Margin="0" Visibility="{Binding IsAuto, Converter={StaticResource BooleanVisibility}}"/></StackPanel>
+     </Grid>
+    </Border>
+    <WrapPanel Grid.Row="3" Margin="0,0,0,8"><Button Content="{DynamicResource AllServersFilter}" Command="{Binding FilterServersCommand}" CommandParameter="All"/><Button Content="{DynamicResource FavoritesFilter}" Command="{Binding FilterServersCommand}" CommandParameter="Favorites"/><Button Content="{DynamicResource HealthyFilter}" Command="{Binding FilterServersCommand}" CommandParameter="Healthy"/><Button Content="{DynamicResource FailedFilter}" Command="{Binding FilterServersCommand}" CommandParameter="Failed"/><Button Content="{DynamicResource UntestedFilter}" Command="{Binding FilterServersCommand}" CommandParameter="Untested"/><CheckBox Content="{DynamicResource FavoritesFirst}" Foreground="{DynamicResource TextBrush}" IsChecked="{Binding FavoritesFirst}" VerticalAlignment="Center" Margin="8,0"/></WrapPanel>
+    <DockPanel Grid.Row="4" Margin="0,0,0,8" Visibility="{Binding HasTestProgress, Converter={StaticResource BooleanVisibility}}"><Button DockPanel.Dock="Right" Content="{DynamicResource CancelLabel}" Command="{Binding CancelTestsCommand}" Visibility="{Binding Testing, Converter={StaticResource BooleanVisibility}}"/><StackPanel><TextBlock Text="{Binding TestProgressText}" Style="{StaticResource SecondaryText}"/><ProgressBar Height="3" IsIndeterminate="True" Margin="0,4,12,0" Visibility="{Binding Testing, Converter={StaticResource BooleanVisibility}}"/></StackPanel></DockPanel>
+    <Grid Grid.Row="5">
+     <ListBox x:Name="VirtualServerList" ItemsSource="{Binding ServerView}" SelectedItem="{Binding SelectedServerRow}" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextBrush}" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.CacheLength="1">
+      <ListBox.Resources><Style TargetType="ScrollBar" BasedOn="{StaticResource ShaghadPageScrollBar}"/></ListBox.Resources>
+      <ListBox.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate></ListBox.ItemsPanel>
+      <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter HorizontalAlignment="Stretch"/></ControlTemplate></Setter.Value></Setter></Style></ListBox.ItemContainerStyle>
+      <ListBox.ItemTemplate><DataTemplate><controls:ServerRowView/></DataTemplate></ListBox.ItemTemplate>
+     </ListBox>
+     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"><StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding ServerView.IsEmpty}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style><TextBlock Text="&#xE968;" FontFamily="Segoe MDL2 Assets" FontSize="32" Foreground="{DynamicResource SymbolBrush}" HorizontalAlignment="Center"/><TextBlock Text="{DynamicResource NoMatchingServers}" Style="{StaticResource SecondaryText}" Margin="0,10"/></StackPanel>
+    </Grid>
+   </Grid>
+  </DataTemplate>
   <Style x:Key="DashboardPrimaryAction" TargetType="Button" BasedOn="{StaticResource ShaghadPrimaryButton}">
    <Setter Property="Content" Value="{DynamicResource Connect}"/><Setter Property="Command" Value="{Binding ConnectCommand}"/><Setter Property="IsEnabled" Value="{Binding CanEdit}"/>
    <Setter Property="MinHeight" Value="48"/><Setter Property="Margin" Value="0,0,0,8"/>
@@ -59,7 +93,8 @@
    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Notice}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding Notice}" AutomationProperties.LiveSetting="Polite" Margin="0,8,0,0">
     <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource LocalizedText}"><Style.Triggers><DataTrigger Binding="{Binding Notice}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
    </TextBlock>
-   <ScrollViewer x:Name="PageScrollViewer" FlowDirection="LeftToRight" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0" CanContentScroll="False">
+   <Grid><ScrollViewer x:Name="PageScrollViewer" FlowDirection="LeftToRight" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0" CanContentScroll="False">
+    <ScrollViewer.Style><Style TargetType="ScrollViewer"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
     <ScrollViewer.Resources><Style TargetType="ScrollBar" BasedOn="{StaticResource ShaghadPageScrollBar}"/></ScrollViewer.Resources>
     <Grid MaxWidth="1160" HorizontalAlignment="Stretch">
      <StackPanel x:Name="DashboardPage">
@@ -82,7 +117,7 @@
       </Border>
       <Border x:Name="SelectedServerCard" Height="96" Style="{StaticResource ShaghadServerCard}" Padding="18,8">
        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="150"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <StackPanel Margin="0,0,20,0"><TextBlock Text="{DynamicResource SelectedServer}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding ActiveServer}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding ActiveServer}" Style="{StaticResource LocalizedText}" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding Location}" Style="{StaticResource SecondaryText}" FontSize="12"/></StackPanel>
+        <StackPanel Margin="0,0,20,0"><TextBlock Text="{Binding SelectedModeDisplay}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding ActiveServer}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding ActiveServer}" Style="{StaticResource LocalizedText}" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding Location}" Style="{StaticResource SecondaryText}" FontSize="12"/></StackPanel>
         <StackPanel Grid.Column="1" Margin="10,0,10,0"><TextBlock Text="{Binding Protocol}" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource Latency}" Style="{StaticResource SecondaryText}" FontSize="11"/><TextBlock x:Name="LatencyValue" Text="{Binding Latency}" Style="{StaticResource TechnicalText}" Margin="0,4"/></StackPanel>
         <Button Grid.Column="2" Content="{DynamicResource ChangeServer}" Command="{Binding NavigateCommand}" CommandParameter="Servers" VerticalAlignment="Center"/>
        </Grid>
@@ -98,29 +133,6 @@
        <StackPanel><TextBlock Text="{DynamicResource UploadLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="—" FontSize="22"/><TextBlock Text="{DynamicResource UnavailableMetric}" Style="{StaticResource SecondaryText}" FontSize="11"/></StackPanel>
        <StackPanel><TextBlock Text="{DynamicResource DurationLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding Duration}" FontSize="22" FlowDirection="LeftToRight"/></StackPanel>
       </UniformGrid>
-     </StackPanel>
-     <StackPanel>
-      <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
-      <TextBlock Text="{DynamicResource Servers}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
-      <WrapPanel Margin="0,0,0,14" IsEnabled="{Binding CanEdit}">
-       <Button Content="{DynamicResource ImportServer}" Click="OpenImport" Style="{StaticResource ShaghadPrimaryButton}"/>
-       <Button Content="{DynamicResource ClipboardImport}" Command="{Binding ClipboardCommand}"/>
-       <Button Content="{DynamicResource TestAllLabel}" Command="{Binding TestAllCommand}"/>
-       <TextBlock Text="{DynamicResource SearchLabel}" Style="{StaticResource SecondaryText}" VerticalAlignment="Center" Margin="8,0"/><TextBox Width="160" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search servers" AutomationProperties.Name="Search servers"/>
-      </WrapPanel>
-      <TextBlock Text="{DynamicResource EmptyServerManager}" Style="{StaticResource SecondaryText}" Margin="0,0,0,14" Visibility="{Binding NeedsServer, Converter={StaticResource BooleanVisibility}}"/>
-      <ListView ItemsSource="{Binding ServerView}" SelectedItem="{Binding SelectedServerRow}" Height="280" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}">
-       <ListView.Resources><Style TargetType="GridViewColumnHeader"><Setter Property="Background" Value="{DynamicResource SidebarBrush}"/><Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/><Setter Property="Padding" Value="10"/></Style></ListView.Resources>
-       <ListView.View><GridView>
-        <GridViewColumn Header="{DynamicResource NameLabel}" Width="190" DisplayMemberBinding="{Binding Server.Name}"/>
-        <GridViewColumn Header="{DynamicResource CountryLabel}" Width="90" DisplayMemberBinding="{Binding CountryDisplay}"/>
-        <GridViewColumn Header="{DynamicResource ProtocolLabel}" Width="90" DisplayMemberBinding="{Binding Server.Protocol}"/>
-        <GridViewColumn Header="{DynamicResource PingLabel}" Width="80" DisplayMemberBinding="{Binding PingDisplay}"/>
-        <GridViewColumn Header="{DynamicResource StatusLabel}" Width="90" DisplayMemberBinding="{Binding StatusDisplay}"/><GridViewColumn Header="{DynamicResource SelectionLabel}" Width="90" DisplayMemberBinding="{Binding SelectionDisplay}"/>
-       </GridView></ListView.View>
-      </ListView>
-      <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding CanEdit}"><Button Content="{DynamicResource SelectServer}" Command="{Binding ActivateCommand}"/><Button Content="{DynamicResource Connect}" Command="{Binding ConnectSelectedCommand}"/><Button Content="{DynamicResource Remove}" Command="{Binding RemoveServerCommand}"/><Button Content="{DynamicResource SortNameLabel}" Command="{Binding SortServersCommand}" CommandParameter="Server.Name"/><Button Content="{DynamicResource SortProtocolLabel}" Command="{Binding SortServersCommand}" CommandParameter="Server.Protocol"/></WrapPanel>
-      <TextBlock Text="{Binding ProfileResult}" Style="{StaticResource SecondaryText}" Margin="0,8"/>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Subscriptions"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
@@ -181,9 +193,7 @@
       </StackPanel></Border>
      </StackPanel>
     </Grid>
-   </ScrollViewer>
+   </ScrollViewer><ContentControl x:Name="ServersPageHost" Content="{Binding}" ContentTemplate="{StaticResource ServersPageTemplate}"><ContentControl.Style><Style TargetType="ContentControl"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ContentControl.Style></ContentControl></Grid>
   </DockPanel>
  </Grid>
 </Window>
-
-

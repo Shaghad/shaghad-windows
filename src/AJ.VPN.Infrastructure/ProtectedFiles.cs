@@ -62,7 +62,7 @@ public sealed class EncryptedLibraryStore(string directory) : ILibraryStore
         ProtectedFiles.CreatePrivateDirectory(Path.GetDirectoryName(path)!);
         var value = await ProtectedFiles.ReadAsync<ProfileLibrary>(path, cancellationToken) ?? ProfileLibrary.Empty;
         if (value.SchemaVersion != 1 || value.Profiles == null || value.Subscriptions == null || !Enum.IsDefined(value.Core) ||
-            value.Profiles.Count > 5000 || value.Subscriptions.Count > 100)
+            value.Profiles.Count > 5000 || value.Subscriptions.Count > 100 || !Enum.IsDefined(value.SelectionMode))
             throw new InvalidDataException("Unsupported or invalid encrypted library. Existing data is preserved.");
         return value;
     }

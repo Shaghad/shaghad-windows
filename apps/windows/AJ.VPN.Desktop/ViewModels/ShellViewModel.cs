@@ -16,6 +16,8 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly ILocalProxyBackend backend;
     private readonly ICoreCatalog catalog;
     private readonly AJ.VPN.Infrastructure.SystemProxyService proxy;
+    private readonly ServerSelectionService selection;
+    private Server? connectedServer;
     private CancellationTokenSource? networkCancellation;
     private Task? connectOperation;
     private SavedProfile? selectedServer;
@@ -32,13 +34,14 @@ public sealed partial class ShellViewModel : ObservableObject
     private ApplicationSettings settings = new();
     private bool settingsWritable = true;
     public ShellViewModel(ISettingsService settingsService, IDiagnosticsService diagnosticsService, ILogger<ShellViewModel> logger, ConnectionService connection,
-        LibraryService library, ILocalProxyBackend backend, ICoreCatalog catalog, AJ.VPN.Infrastructure.SystemProxyService proxy)
+        LibraryService library, ILocalProxyBackend backend, ICoreCatalog catalog, AJ.VPN.Infrastructure.SystemProxyService proxy, ServerSelectionService selection)
     {
         this.settingsService = settingsService;
         this.diagnosticsService = diagnosticsService;
         this.logger = logger;
         this.connection = connection;
         this.library = library; this.backend = backend; this.catalog = catalog; this.proxy = proxy;
+        this.selection = selection;
         InitializePremium();
         NavigateCommand = new RelayCommand(p => CurrentPage = p?.ToString() ?? "Dashboard");
         SaveCommand = new AsyncCommand(SaveAsync, HandleFailure);
@@ -46,7 +49,7 @@ public sealed partial class ShellViewModel : ObservableObject
         ValidateCommand = new AsyncCommand(ValidateAsync, HandleFailure);
         ExitCommand = new RelayCommand(_ => System.Windows.Application.Current.MainWindow?.Close());
         ClipboardCommand = new AsyncCommand(async () => { ProfileInput = System.Windows.Clipboard.GetText(); await ValidateAsync(); }, HandleFailure);
-        ActivateCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.SelectAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
+        ActivateCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) { await library.SelectAsync(SelectedServer.Server.Id); await library.SetSelectionModeAsync(SelectionMode.Manual); } RefreshLibrary(); }, HandleFailure);
         RemoveServerCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.RemoveProfileAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
         ConnectCommand = new AsyncCommand(async () => { connectOperation = ConnectAsync(); await connectOperation; }, HandleFailure);
         DisconnectCommand = new AsyncCommand(DisconnectAsync, HandleFailure);
@@ -80,19 +83,24 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool InternetVerified => connection.InternetVerified;
     public string Endpoint => backend.Port is int port ? $"127.0.0.1:{port}" : Resource("ProxyStopped");
     public string Verification => Resource(InternetVerified ? "InternetVerified" : "InternetUnverified");
-    public string ActiveServer => library.Active?.Server.Name ?? Resource("NoServer");
-    public bool HasActiveProfile => library.Active != null;
+    private Server? DisplayServer => State is ConnectionState.Connected or ConnectionState.Connecting ? connectedServer :
+        library.Current.SelectionMode == SelectionMode.Auto ? library.Current.Profiles.Find(p => p.Server.Id == ResolvedServerId)?.Server : SelectedServer?.Server ?? library.Active?.Server;
+    public string ActiveServer => (IsAuto ? Resource("AutoShort") + " · " : "") + (DisplayServer?.Name ?? Resource("NoServer"));
+    public bool HasActiveProfile => IsAuto ? Servers.Count > 0 : library.Active != null;
     private static string Resource(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
     public void RefreshLocalizedText()
     {
         Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification)); Raise(nameof(ConsumerStatus)); Raise(nameof(Location)); Raise(nameof(ConnectionMode)); Raise(nameof(NeedsServer));
         if (ServerView != null) RefreshPremiumLibrary();
+        RaiseAuto(); Raise(nameof(TestProgressText));
     }
     public string CoreSummary { get => coreSummary; private set => Set(ref coreSummary, value); }
-    public string Latency { get => latency; private set => Set(ref latency, value); }
-    public bool Busy { get => busy; private set { Set(ref busy, value); Raise(nameof(CanEdit)); } }
-    public bool CanEdit => !Busy && State is ConnectionState.Disconnected or ConnectionState.Error;
-    public SavedProfile? SelectedServer { get => selectedServer; set => Set(ref selectedServer, value); }
+    public string Latency { get => State is ConnectionState.Connected or ConnectionState.Connecting ? latency :
+        DisplayServer is { } server && library.Current.Profiles.Find(p => p.Server.Id == server.Id) is { } profile && selection.Recent(profile, SelectedCore) is { IsHealthy: true } result ? $"{result.Milliseconds} ms" : "—";
+        private set => Set(ref latency, value); }
+    public bool Busy { get => busy; private set { Set(ref busy, value); Raise(nameof(CanEdit)); Raise(nameof(CanProbe)); Raise(nameof(CanTest)); } }
+    public bool CanEdit => !Busy && !Testing && State is ConnectionState.Disconnected or ConnectionState.Error;
+    public SavedProfile? SelectedServer { get => selectedServer; set { if (Set(ref selectedServer, value)) { Raise(nameof(ActiveServer)); Raise(nameof(Protocol)); Raise(nameof(Location)); Raise(nameof(Latency)); } } }
     public Subscription? SelectedSubscription { get => selectedSubscription; set => Set(ref selectedSubscription, value); }
     public CoreKind SelectedCore
     {
@@ -102,7 +110,7 @@ public sealed partial class ShellViewModel : ObservableObject
             var profile = SelectedServer ?? library.Active;
             if (profile != null && library.CoreCompatibilityError(profile, value) is string error)
             { Notice = error; Raise(nameof(SelectedCore)); return; }
-            if (Set(ref selectedCore, value)) Raise(nameof(CoreDisplay));
+            if (Set(ref selectedCore, value)) { Raise(nameof(CoreDisplay)); ResolvedServerId = null; if (ServerView != null) RefreshPremiumLibrary(); }
         }
     }
     public string CoreDisplay => SelectedCore == CoreKind.SingBox ? "sing-box" : "Xray";
@@ -178,9 +186,10 @@ public sealed partial class ShellViewModel : ObservableObject
         EnsureIdle();
         var input = ProfileInput;
         ProfileInput = "";
+        var previousCount = library.Current.Profiles.Count;
         await library.ImportAsync(input);
         RefreshLibrary();
-        ProfileResult = "Validated profiles imported and encrypted for this Windows user.";
+        ProfileResult = $"{library.Current.Profiles.Count - previousCount} {Resource("ImportedCount")}";
         logger.LogInformation(new EventId(401), "Profile import completed");
     }
     private void EnsureIdle() { if (!CanEdit) throw new InvalidOperationException("Disconnect before changing the server library or core."); }
@@ -191,14 +200,17 @@ public sealed partial class ShellViewModel : ObservableObject
         Subscriptions.Clear(); foreach (var item in library.Current.Subscriptions) Subscriptions.Add(item);
         SelectedServer = library.Active; SelectedSubscription = Subscriptions.FirstOrDefault(s => s.Id == subId) ?? Subscriptions.FirstOrDefault(); RefreshPremiumLibrary();
         SelectedCore = library.Current.Core; Raise(nameof(ActiveServer)); Raise(nameof(HasActiveProfile)); Raise(nameof(NeedsServer)); Raise(nameof(Protocol)); Raise(nameof(Location));
+        RaiseAuto();
     }
     private void RefreshState()
     {
         if (State is ConnectionState.Disconnected or ConnectionState.Error)
         {
             ipCancellation?.Cancel(); PublicIp = "—"; Latency = "—"; connectedAt = null;
+            connectedServer = null;
         }
         foreach (var name in new[] { nameof(State), nameof(InternetVerified), nameof(Endpoint), nameof(Verification), nameof(CanEdit), nameof(ConsumerStatus), nameof(CanProbe), nameof(ConnectionMode), nameof(Duration) }) Raise(name);
+        Raise(nameof(ActiveServer)); Raise(nameof(Protocol)); Raise(nameof(Location)); RefreshRowSelection();
     }
     private async Task RefreshCoresAsync()
     {
@@ -212,13 +224,25 @@ public sealed partial class ShellViewModel : ObservableObject
     }
     private async Task ConnectAsync()
     {
-        EnsureIdle(); if (SelectedServer == null) { Notice = "Import and select a server first."; return; }
+        EnsureIdle(); if (!IsAuto && SelectedServer == null) { Notice = Resource("EmptyServerManager"); return; }
         Busy = true; Latency = "—"; networkCancellation = new();
         try
         {
-            await library.SelectAsync(SelectedServer.Server.Id, networkCancellation.Token);
             await library.SetCoreAsync(SelectedCore, networkCancellation.Token);
-            await connection.ConnectAsync(SelectedServer.Server, networkCancellation.Token); connectedAt = DateTimeOffset.UtcNow; await ProbeAsync();
+            var candidate = SelectedServer;
+            if (IsAuto)
+            {
+                var snapshot = library.Current;
+                var resolved = await EvaluateServersAsync(false, networkCancellation.Token);
+                if (!resolved.CompleteScope || resolved.ResolvedServerId == null) { Notice = Resource("NoHealthyServers"); return; }
+                if (!ReferenceEquals(snapshot, library.Current)) throw new InvalidOperationException("Library changed during selection.");
+                candidate = snapshot.Profiles.Find(p => p.Server.Id == resolved.ResolvedServerId);
+                ResolvedServerId = candidate?.Server.Id;
+            }
+            if (candidate == null) { Notice = Resource("NoHealthyServers"); return; }
+            await library.SelectAsync(candidate.Server.Id, networkCancellation.Token);
+            connectedServer = candidate.Server;
+            await connection.ConnectAsync(candidate.Server, networkCancellation.Token); connectedAt = DateTimeOffset.UtcNow; await ProbeAsync();
             CoreSummary = backend.Version;
             Notice = InternetVerified ? "HTTPS verified through the selected server. System Proxy can be enabled in Settings." : "Local proxy ready; internet access could not be verified. Retry the HTTPS test.";
         }
@@ -245,7 +269,8 @@ public sealed partial class ShellViewModel : ObservableObject
             if (State != ConnectionState.Connected || backend.Port != port || operation.IsCancellationRequested) return;
             connection.RecordProbe(result);
             Latency = result.Success && result.Milliseconds is long ms ? $"{ms} ms" : "—";
-            if (library.Active is { } active) pings[active.Server.Id] = result.Success ? Latency : "Unavailable"; RefreshPremiumLibrary();
+            if (library.Current.Profiles.Find(p => p.Server.Id == connectedServer?.Id) is { } profile) selection.RecordProbe(profile, library.Current.Core, result);
+            RefreshPremiumLibrary();
             Notice = result.Message; RefreshState();
             if (result.Success) {
                 var ip = backend.PublicExitAddress;
@@ -264,7 +289,7 @@ public sealed partial class ShellViewModel : ObservableObject
         else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings."; Raise(nameof(ConnectionMode));
     }
     private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD · Windows System Proxy", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
-    public async Task ShutdownAsync() { await DisconnectAsync(); }
+    public async Task ShutdownAsync() { testCancellation?.Cancel(); if (testOperation != null) { try { await testOperation; } catch { } } await DisconnectAsync(); }
     private void HandleFailure(Exception _)
     {
         Notice = _ switch

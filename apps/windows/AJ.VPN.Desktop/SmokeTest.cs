@@ -52,6 +52,7 @@ internal static class SmokeTest
         tray.CheckMenuCallbacks();
         await CheckLayoutMatrixAsync(window, vm, output, appearance);
         await CheckManagementAsync(window, vm, output, appearance);
+        await CheckServerPageAsync(window, vm, output, appearance);
         window.Hide();
         File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: SHAGHAD startup/DI; eight pages; embedded Vazirmatn; seven ICO frames; tray About callback; GPL/OFL viewer. 32 shown-window layout checks: four sizes x two languages x two themes x Dashboard/About. LTR shell/native chrome, RTL text islands, LTR technical values, fixed sidebar/card positions, no page overflow or clipped text; long-page scrolling remains functional. Native dragging, snapping and caption interaction require separate interactive verification. No production saved-preference mutation. Management fixtures and an intentionally unreachable core/proxy check run only in isolated test storage.\n");
     }
@@ -59,6 +60,59 @@ internal static class SmokeTest
     {
         command.Execute(null);
         while (!command.CanExecute(null)) await Task.Delay(20);
+    }
+    private static async Task CheckServerPageAsync(Window window, ShellViewModel vm, string output, Action<ApplicationSettings> appearance)
+    {
+        var results = new List<object>();
+        // All fixture names disclose their offline status. Country is explicitly assigned by this test user.
+        var fixtures = Enumerable.Range(1, 1000).Select(i => $"vless://00000000-0000-0000-0000-{i:000000000000}@example.invalid:443?security=tls&type=tcp#OFFLINE%20UI%20fixture%20{i:0000}").ToArray();
+        foreach (var count in new[] { 100, 500, 1000 })
+        {
+            vm.ProfileInput = string.Join("\n", fixtures.Take(count)); await ExecuteAsync(vm.ValidateCommand);
+            vm.CurrentPage = "Servers"; await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+            var list = Descendants(window).OfType<ListBox>().Single(l => l.Name == "VirtualServerList");
+            var realized = Descendants(list).OfType<Controls.ServerRowView>().Count();
+            if (vm.Servers.Count != count || realized > 40 || realized == 0) throw new InvalidOperationException($"Virtualization failed: {count} profiles, {realized} realized rows.");
+            results.Add(new { Servers = count, RealizedRows = realized, Passed = true });
+        }
+        var codes = new[] { "FI", "DE", "NL", "US", "JP" };
+        for (var i = 0; i < codes.Length; i++) await vm.SaveCountryAsync(vm.ServerRows[i].Server.Id, codes[i]);
+        await ExecuteAsync(vm.ServerRows[0].FavoriteCommand);
+        vm.Search = "Finland"; if (vm.ServerView.Cast<object>().Count() != 1) throw new InvalidOperationException("Country-name search failed."); vm.Search = "";
+        vm.FilterServersCommand.Execute("Favorites"); if (vm.ServerView.Cast<object>().Count() != 1) throw new InvalidOperationException("Favorite filtering failed."); vm.FilterServersCommand.Execute("All");
+        vm.SortServersCommand.Execute("Name");
+        foreach (var size in new[] { new Size(1024,600), new Size(1280,720), new Size(1366,768), new Size(1920,1080) })
+        foreach (var theme in new[] { ThemePreference.Light, ThemePreference.Dark })
+        foreach (var language in new[] { "en", "fa" })
+        {
+            window.Width = size.Width; window.Height = size.Height; appearance(new(1, theme, language));
+            await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+            var list = Descendants(window).OfType<ListBox>().Single(l => l.Name == "VirtualServerList");
+            var host = (FrameworkElement)window.FindName("ServersPageHost");
+            if (list.ActualHeight < 130 || host.ActualHeight > ((FrameworkElement)window.FindName("ContentHost")).ActualHeight + 1) throw new InvalidOperationException("Server page overflow or collapsed viewport.");
+            foreach (var button in Descendants(host).OfType<Button>().Where(b => b.IsVisible))
+            {
+                var bounds = button.TransformToAncestor(host).TransformBounds(new Rect(button.RenderSize));
+                var rowAction = false;
+                for (DependencyObject? ancestor = button; ancestor != null; ancestor = VisualTreeHelper.GetParent(ancestor)) if (ancestor == list) { rowAction = true; break; }
+                if (bounds.Left < -1 || bounds.Right > host.ActualWidth + 1 || (!rowAction && (bounds.Top < -1 || bounds.Bottom > host.ActualHeight + 1)))
+                    throw new InvalidOperationException($"Server page action is clipped: {button.Content}; {bounds}; host={host.RenderSize}.");
+            }
+            list.ScrollIntoView(vm.ServerRows.Last()); await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+            if (Descendants(list).OfType<Controls.ServerRowView>().Count() > 50) throw new InvalidOperationException("Scrolling defeated recycling.");
+            list.ScrollIntoView(vm.ServerRows.First()); await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+            RenderNative(window, Path.Combine(output, $"Phase4-Servers-{(int)size.Width}x{(int)size.Height}-{theme}-{language}.png"));
+            results.Add(new { Width = size.Width, Height = size.Height, Theme = theme.ToString(), Language = language, RealizedRows = Descendants(list).OfType<Controls.ServerRowView>().Count(), Viewport = list.ActualHeight, Passed = true });
+        }
+        // Real cancellable Test All; no fake healthy states, and only the bounded initial workers can start.
+        vm.TestAllCommand.Execute(null);
+        await Task.Delay(200); await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        if (!vm.Testing) throw new InvalidOperationException("Test All did not expose progress.");
+        RenderNative(window, Path.Combine(output, "Phase4-Test-progress-native.png"));
+        vm.CancelTestsCommand.Execute(null); while (!vm.TestAllCommand.CanExecute(null)) await Task.Delay(30);
+        if (vm.Testing || vm.State != ConnectionState.Disconnected) throw new InvalidOperationException("Candidate cancellation changed connection state or failed cleanup.");
+        results.Add(new { TestAllCancellation = "Passed", ActualConnectionState = vm.State.ToString() });
+        File.WriteAllText(Path.Combine(output, "phase4-server-layout-results.json"), System.Text.Json.JsonSerializer.Serialize(results, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
     }
     private static async Task CheckManagementAsync(Window window, ShellViewModel vm, string output, Action<ApplicationSettings> appearance)
     {
@@ -68,6 +122,13 @@ internal static class SmokeTest
         if (!vm.HasActiveProfile || vm.Servers.Count != 1) throw new InvalidOperationException("Import or automatic selection failed.");
         vm.SelectedServerRow = vm.ServerRows[0];
         await ExecuteAsync(vm.ActivateCommand);
+        await ExecuteAsync(vm.AutoCommand);
+        if (!vm.IsAuto || vm.ResolvedServerId != null || vm.Servers.Count != 1) throw new InvalidOperationException("Auto created a fake profile or selected the unreachable fixture.");
+        await ExecuteAsync(vm.ConnectCommand);
+        if (vm.State != ConnectionState.Disconnected || vm.ResolvedServerId != null) throw new InvalidOperationException("Auto connected without a healthy candidate.");
+        vm.CurrentPage = "Servers"; await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        RenderNative(window, Path.Combine(output, "Phase4-Auto-no-healthy-native.png"));
+        await ExecuteAsync(vm.ManualCommand);
         vm.Search = "nonmatching";
         if (!vm.ServerView.IsEmpty) throw new InvalidOperationException("Server filter failed.");
         vm.Search = "";

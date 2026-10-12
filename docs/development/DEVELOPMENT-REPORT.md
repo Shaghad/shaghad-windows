@@ -176,3 +176,7 @@ GitHub authentication missing. Core execution, saved profile import/selection, s
 ## 12. Next Development Steps — Not Started except adapter parsing
 
 Authenticate and verify/create the user's fork, retain exact stable pin. Add upstream storage isolation or a worker host. Implement DPAPI protected profile/subscription storage and transactional updates. Select and verify official engine binaries, generate validated configs through ServiceLib, own/monitor processes and prove proxied connectivity. Add ownership-aware System Proxy restoration with crash/concurrent-writer tests. Implement bounded proxy testing/ranking and real diagnostics. Validate TUN separately with explicit privilege action. Finish translation, accessibility, signing and packaging review.
+
+## Phase 4 delivery — 2026-10-11
+
+The historical foundation findings above are superseded for Phase 4 by [SHAGHAD PHASE 4 DEVELOPMENT REPORT](SHAGHAD-PHASE-4-DEVELOPMENT-REPORT.md). Servers management, operational Auto/Manual and isolated HTTPS testing are implemented. Release build: zero warnings/errors; 110 tests and 23 native checks passed. The explicitly approved German profile passed remote Auto connectivity and active-session preservation. Local package: artifacts/SHAGHAD-Phase4-win-x64.zip; broader validation limits are recorded in the report.

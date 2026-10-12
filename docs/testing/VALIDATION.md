@@ -135,3 +135,7 @@ The restricted process sandbox caused an initial MSBuild failure without compile
 ## Not validated
 
 No real subscription URL, server credential or core binary was provided/used. VPN, internet/public IP, traffic counters, DNS, safe proxy restoration, engine provenance, TUN, privileged cleanup, signing/installer upgrades, clean machine deployment, ARM64, Windows 10 edition compatibility, multiple monitors/DPI, Narrator and live keyboard interaction remain untested. Upstream's own test project was inspected but not added/run (it references a beta assertion package). CI workflow exists but was not remotely run. NuGet vulnerability metadata is neither a full code audit nor complete license compliance.
+
+## Phase 4 final validation — 2026-10-11
+
+See [server selection validation](SERVER-SELECTION-VALIDATION.md) for 110 passing tests, 23 native checks, the final real WPF matrix and approved remote Auto/Test All results. Earlier phase results remain historical evidence.

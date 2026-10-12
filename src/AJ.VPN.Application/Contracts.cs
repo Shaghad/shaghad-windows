@@ -2,6 +2,12 @@ using AJ.VPN.Domain;
 
 namespace AJ.VPN.Application;
 
+public interface ICandidateTester
+{
+    Task<ServerTestResult> TestAsync(SavedProfile profile, CoreKind core, CancellationToken token);
+}
+public interface INetworkContext { string Fingerprint { get; } }
+
 public interface ISettingsService
 {
     Task<ApplicationSettings> LoadAsync(CancellationToken cancellationToken = default);

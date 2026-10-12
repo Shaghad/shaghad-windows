@@ -1,0 +1,23 @@
+{
+  "Fixture": "Owned loopback VLESS server, synthetic UUID; freedom outbound to actual HTTPS measurement endpoints",
+  "ProviderConnectivity": "Not tested; no authorized remote provider profile available",
+  "AutoResolvedHealthyCandidate": true,
+  "DashboardConnectUsedAuto": true,
+  "ActivePidAndPortPreservedByTestAll": true,
+  "WindowsProxyUnchanged": true,
+  "ActualHttpsVerified": true,
+  "ActualExitIpMeasured": true,
+  "Measurements": [
+    {
+      "Health": 2,
+      "Milliseconds": 513,
+      "SuccessfulAttempts": 2
+    },
+    {
+      "Health": 5,
+      "Milliseconds": null,
+      "SuccessfulAttempts": 0
+    }
+  ],
+  "SelectionMode": "Auto"
+}
