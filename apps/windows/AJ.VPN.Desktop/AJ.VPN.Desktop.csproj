@@ -19,7 +19,6 @@
     <AssemblyTitle>SHAGHAD</AssemblyTitle>
     <Product>SHAGHAD</Product>
     <Description>Modern Secure Network Client</Description>
-    <Version>0.4.0</Version>
     <ApplicationIcon>..\..\..\branding\icons\shaghad.ico</ApplicationIcon>
   </PropertyGroup>
 

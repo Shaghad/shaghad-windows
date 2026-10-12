@@ -39,9 +39,14 @@ internal static class SmokeTest
         vm.CurrentPage = "Dashboard";
         await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         Render(window, Path.Combine(output, "Dashboard-dark.png"));
+        RenderNative(window, Path.Combine(output, "Dashboard-Disconnected-Dark.png"));
+        appearance(new(1, ThemePreference.Light, "en"));
+        await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+        RenderNative(window, Path.Combine(output, "Dashboard-Disconnected-Light.png"));
         appearance(new(1, ThemePreference.Light, "fa"));
         await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         Render(window, Path.Combine(output, "Dashboard-persian.png"));
+        RenderNative(window, Path.Combine(output, "Dashboard-Persian.png"));
         var persian = (FontFamily)System.Windows.Application.Current.FindResource("PersianFont");
         if (!new Typeface(persian, FontStyles.Normal, FontWeights.Normal, FontStretches.Normal).TryGetGlyphTypeface(out var glyphs)
             || !glyphs.FamilyNames.Values.Any(name => name.Contains("Vazirmatn", StringComparison.Ordinal)))
@@ -54,7 +59,7 @@ internal static class SmokeTest
         await CheckManagementAsync(window, vm, output, appearance);
         await CheckServerPageAsync(window, vm, output, appearance);
         window.Hide();
-        File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: SHAGHAD startup/DI; eight pages; embedded Vazirmatn; seven ICO frames; tray About callback; GPL/OFL viewer. 32 shown-window layout checks: four sizes x two languages x two themes x Dashboard/About. LTR shell/native chrome, RTL text islands, LTR technical values, fixed sidebar/card positions, no page overflow or clipped text; long-page scrolling remains functional. Native dragging, snapping and caption interaction require separate interactive verification. No production saved-preference mutation. Management fixtures and an intentionally unreachable core/proxy check run only in isolated test storage.\n");
+        File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: SHAGHAD startup/DI; eight pages; embedded Vazirmatn; seven ICO frames; tray About callback; GPL/OFL viewer. 32 shown-window layout checks: four sizes x two languages x two themes x Dashboard/About. LTR shell/native chrome, RTL text islands, LTR technical values, left overlay drawer and fixed connection panel positions, no page overflow or clipped text; long-page scrolling remains functional. Native dragging, snapping and caption interaction require separate interactive verification. No production saved-preference mutation. Management fixtures and an intentionally unreachable core/proxy check run only in isolated test storage.\n");
     }
     private static async Task ExecuteAsync(System.Windows.Input.ICommand command)
     {
@@ -164,10 +169,16 @@ internal static class SmokeTest
         appearance(new(1, ThemePreference.Dark, "en"));
         vm.CurrentPage = "Dashboard";
         var main = (MainWindow)window;
+        window.Activate();
         main.ToggleSidebar(window, new RoutedEventArgs());
         await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
         RenderNative(window, Path.Combine(output, "Dashboard-compact-native.png"));
+        RenderNative(window, Path.Combine(output, "Dashboard-Hamburger-Open.png"));
+        if (((FrameworkElement)window.FindName("Sidebar")).Visibility != Visibility.Visible || !((FrameworkElement)window.FindName("Sidebar")).IsKeyboardFocusWithin)
+            throw new InvalidOperationException("Drawer opening did not move keyboard focus.");
         main.ToggleSidebar(window, new RoutedEventArgs());
+        if (((FrameworkElement)window.FindName("Sidebar")).Visibility != Visibility.Collapsed || !((FrameworkElement)window.FindName("HamburgerButton")).IsKeyboardFocused)
+            throw new InvalidOperationException("Drawer closing did not restore focus.");
         foreach (var editor in new[] { "Import", "Subscription" }) {
             Exception? captureFailure = null;
             _ = window.Dispatcher.BeginInvoke(() => {
@@ -248,7 +259,7 @@ internal static class SmokeTest
                         throw new InvalidOperationException("Native RTL chrome or standard resizing/caption controls regressed.");
                     var sidebarPoint = sidebar.TranslatePoint(new Point(), shell);
                     var contentPoint = host.TranslatePoint(new Point(), shell);
-                    if (sidebarPoint.X > 1 || contentPoint.X < sidebar.ActualWidth || sidebar.FlowDirection != FlowDirection.LeftToRight)
+                    if (sidebarPoint.X > 1 || contentPoint.X < 0 || sidebar.FlowDirection != FlowDirection.LeftToRight)
                         throw new InvalidOperationException("Sidebar moved or content columns mirrored.");
                     var navigationBounds = Descendants(sidebar).OfType<Control>().Where(c => c is RadioButton or Button && c.IsVisible)
                         .Select(c => c.TransformToAncestor(sidebar).TransformBounds(new Rect(c.RenderSize))).OrderBy(r => r.Top).ToArray();
@@ -287,7 +298,7 @@ internal static class SmokeTest
                         var cards = positions.Keys.Select(name => (FrameworkElement)window.FindName(name))
                             .Select(c => c.TransformToAncestor(viewer).TransformBounds(new Rect(c.RenderSize))).OrderBy(r => r.Top).ToArray();
                         for (var i = 1; i < cards.Length; i++)
-                            if (cards[i - 1].Bottom > cards[i].Top + 1) throw new InvalidOperationException("Dashboard cards overlap.");
+                            if (Rect.Intersect(cards[i - 1], cards[i]) is var overlap && !overlap.IsEmpty && overlap.Width > 1 && overlap.Height > 1) throw new InvalidOperationException("Dashboard cards overlap.");
                     }
                     rows.Add(new { Width = window.ActualWidth, Height = window.ActualHeight, Language = language, Theme = theme.ToString(), Page = page,
                         ShellDirection = shell.FlowDirection.ToString(), SidebarX = sidebarPoint.X, ContentX = contentPoint.X,

@@ -180,3 +180,6 @@ Authenticate and verify/create the user's fork, retain exact stable pin. Add ups
 ## Phase 4 delivery — 2026-10-11
 
 The historical foundation findings above are superseded for Phase 4 by [SHAGHAD PHASE 4 DEVELOPMENT REPORT](SHAGHAD-PHASE-4-DEVELOPMENT-REPORT.md). Servers management, operational Auto/Manual and isolated HTTPS testing are implemented. Release build: zero warnings/errors; 110 tests and 23 native checks passed. The explicitly approved German profile passed remote Auto connectivity and active-session preservation. Local package: artifacts/SHAGHAD-Phase4-win-x64.zip; broader validation limits are recorded in the report.
+
+## Phase 5 — 2026-10-12
+See [SHAGHAD PHASE 5 DEVELOPMENT REPORT](SHAGHAD-PHASE-5-DEVELOPMENT-REPORT.md) for the 0.5.0-beta.1 implementation, actual validation and release limitations. Historical milestone statements above remain historical.

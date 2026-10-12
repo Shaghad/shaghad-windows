@@ -1,0 +1,79 @@
+name: Windows beta release
+on:
+  push:
+    tags: ['v0.5.*-beta.*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify tag and source version
+        shell: pwsh
+        run: |
+          [xml]$document = Get-Content Version.props
+          if ($env:GITHUB_REF_NAME -ne "v$($document.Project.PropertyGroup.Version)") { throw 'Tag/version mismatch.' }
+      - name: Verify pinned cores
+        shell: pwsh
+        run: ./scripts/install-cores.ps1 -Download
+      - name: Audit source and history
+        shell: pwsh
+        run: ./scripts/secret-audit.ps1 -Output artifacts/release-secret-audit.json -FailOnUnreviewed
+      - name: Build, test and package
+        shell: pwsh
+        run: ./scripts/release.ps1
+      - name: Native core validation from published package
+        shell: pwsh
+        run: |
+          [xml]$document = Get-Content Version.props
+          ./scripts/core-smoke-test.ps1 -AppPath "artifacts/releases/v$($document.Project.PropertyGroup.Version)/portable/Shaghad.dll"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-beta
+          path: |
+            artifacts/releases/*/*.zip
+            artifacts/releases/*/SHA256SUMS.txt
+            artifacts/releases/*/*.md
+          if-no-files-found: error
+  publish:
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated artifacts
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name windows-beta --dir release
+      - name: Publish complete prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $manifest = Get-ChildItem release -Filter SHA256SUMS.txt -Recurse
+          if (@($manifest).Count -ne 1) { throw 'Expected one checksum manifest.' }
+          $directory = $manifest.Directory.FullName
+          foreach ($line in Get-Content $manifest.FullName) {
+            if ($line -notmatch '^([a-f0-9]{64})  ([^/\\]+)$') { throw 'Invalid manifest entry.' }
+            $expected = $Matches[1]; $name = $Matches[2]
+            if ((Get-FileHash -LiteralPath (Join-Path $directory $name) -Algorithm SHA256).Hash -ne $expected) { throw 'Artifact checksum failed.' }
+          }
+          $notes = Get-ChildItem $directory -Filter '*.md'
+          $zip = Get-ChildItem $directory -Filter '*portable.zip'
+          if (@($notes).Count -ne 1 -or @($zip).Count -ne 1) { throw 'Required release assets missing.' }
+          gh release create $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY --verify-tag --draft --prerelease --title "SHAGHAD $env:GITHUB_REF_NAME — First Windows Preview" --notes-file $notes.FullName $zip.FullName $manifest.FullName $notes.FullName
+          if ($LASTEXITCODE) { throw 'Draft release upload failed; no public release was published.' }
+          gh release edit $env:GITHUB_REF_NAME --repo $env:GITHUB_REPOSITORY --draft=false --prerelease
+          if ($LASTEXITCODE) { throw 'Prerelease publication failed.' }

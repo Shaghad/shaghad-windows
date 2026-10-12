@@ -14,7 +14,7 @@ public sealed partial class ShellViewModel
     private CancellationTokenSource? ipCancellation, testCancellation;
     private Task? testOperation;
     private string publicIp = "—", search = "";
-    private DateTimeOffset? connectedAt;
+    private long? connectedAt;
     private DispatcherTimer? durationTimer;
     private ServerFilter serverFilter;
     private ServerSort serverSort = ServerSort.LowestLatency;
@@ -33,7 +33,8 @@ public sealed partial class ShellViewModel
     public string Protocol => DisplayServer?.Protocol.ToUpperInvariant() ?? "—";
     public string Location => DisplayServer?.Country ?? Resource("UnknownLocation");
     public string ConnectionMode => proxy.IsApplied ? Resource("SystemProxyMode") : Resource("LocalProxyMode");
-    public string Duration => connectedAt is { } start && State == ConnectionState.Connected ? (DateTimeOffset.UtcNow - start).ToString(@"hh\:mm\:ss") : "—";
+    public string Duration => connectedAt is { } start && State == ConnectionState.Connected ? FormatDuration(System.Diagnostics.Stopwatch.GetElapsedTime(start)) : "—";
+    private static string FormatDuration(TimeSpan elapsed) => $"{(long)elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00}";
     public ICollectionView ServerView { get; private set; } = null!;
     public string Search { get => search; set { if (Set(ref search, value)) ServerView.Refresh(); } }
     public bool FavoritesFirst { get => favoritesFirst; set { if (Set(ref favoritesFirst, value)) ApplyServerSort(); } }
@@ -82,7 +83,7 @@ public sealed partial class ShellViewModel
             finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; }
         }, HandleFailure);
         durationTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        durationTimer.Tick += (_, _) => { Raise(nameof(Duration)); if (!Testing) RefreshCachedResults(); };
+        durationTimer.Tick += (_, _) => { Raise(nameof(Duration)); if (!Testing) RefreshCachedResults(); Raise(nameof(FastestServers)); BeginMonitoringTick(); };
         durationTimer.Start();
         ApplyServerSort();
     }
@@ -148,6 +149,7 @@ public sealed partial class ShellViewModel
         if (State == ConnectionState.Connected)
         {
             if (!Confirm(Resource("SwitchServerConfirm"))) return;
+            manualDisconnect = true;
             await DisconnectAsync();
         }
         EnsureIdle(); SelectedServer = profile; await library.SetSelectionModeAsync(SelectionMode.Manual);

@@ -126,5 +126,19 @@
  <sys:String x:Key="HealthUnsupported">ناسازگار با هسته انتخابی</sys:String>
  <sys:String x:Key="HealthUnsupportedShort">ناسازگار</sys:String>
  <sys:String x:Key="HealthCancelled">لغوشده</sys:String>
+ <sys:String x:Key="ProxyTrafficScope">ترافیک پراکسی برنامه · شامل آزمون‌ها</sys:String>
+ <sys:String x:Key="FastestServersLabel">سریع‌ترین سرورها · نتایج اخیر HTTPS</sys:String>
+ <sys:String x:Key="AutoFailoverLabel">جابه‌جایی خودکار (فقط حالت خودکار)</sys:String>
+ <sys:String x:Key="AutoRecoveryLabel">بازیابی پس از بیداری یا تغییر شبکه</sys:String>
+ <sys:String x:Key="RecoveryPolicyHint">سه خطا، دو تلاش، دو دقیقه فاصله. اتصال مجدد پراکسی سیستم تا اعتبارسنجی مالکیت مسدود است.</sys:String>
+ <sys:String x:Key="RecoveryProxyBlocked">بازیابی خودکار متوقف شد؛ انتقال مالکیت پراکسی سیستم ایمن نیست. تنظیمات را بررسی کنید.</sys:String>
+ <sys:String x:Key="RecoveryVerified">اتصال بازیابی‌شده با HTTPS تأیید شد.</sys:String>
+ <sys:String x:Key="RecoveryUnverified">پراکسی بازیابی شد؛ تأیید اینترنت در انتظار است.</sys:String>
+ <sys:String x:Key="RecoveryFailed">بازیابی ناموفق بود؛ اتصال دستی را امتحان کنید.</sys:String>
+ <sys:String x:Key="QualityOffline">آفلاین</sys:String>
+ <sys:String x:Key="QualityUnverified">تأیید نشده</sys:String>
+ <sys:String x:Key="QualityExcellent">عالی</sys:String>
+ <sys:String x:Key="QualityGood">خوب</sys:String>
+ <sys:String x:Key="QualityDegraded">ضعیف</sys:String>
 </ResourceDictionary>
 

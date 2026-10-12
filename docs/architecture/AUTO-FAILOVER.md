@@ -1,0 +1,7 @@
+# Automatic failover
+
+Session-only opt-in in Settings; off on launch. Auto selection must already be active. Manual mode never changes servers automatically. Each minute, existing proxied HTTPS verification updates consecutive success/failure state; one transient failure cannot trigger a switch. Three failures qualify, bounded by two reconnect attempts per explicit user connection and a monotonic two-minute cooldown. A success resets the failure threshold (hysteresis). Explicit Disconnect cancels pending operations and suppresses recovery. Explicit Connect resets the budget.
+
+Candidates come only from `ServerSelectionService.Recent`, requiring current core/profile/network fingerprints and five-minute monotonic cache validity. Rank uses real latency and stable ID. Current and already attempted IDs are excluded; compatibility is rechecked before selection. No full library probing occurs merely to find failover candidates. The selected real ID passes through the original LibraryService and ConnectionService start/stop/probe lifecycle; no second process manager exists.
+
+System Proxy ownership cannot yet transfer safely across changing ephemeral listeners. If an automatic switch would be required while SHAGHAD owns System Proxy, disable automatic policies, disconnect through the original ownership-aware restore workflow and explain the block. This is not a packet-level Kill Switch; existing external proxy changes and journals remain preserved. Live System Proxy transfer is deliberately not claimed as completed.

@@ -71,11 +71,16 @@ internal static class CoreSelfTest
                 var readiness = await backend.StartAsync(library.Active!.Server, CancellationToken.None);
                 if (!readiness.IsReady || readiness.InternetVerified || backend.Port == null) throw new InvalidDataException("Invalid readiness semantics.");
                 var port = backend.Port.Value;
+                TrafficCounters? counters = null;
+                for (var attempt = 0; attempt < 10 && counters == null; attempt++) { counters = await backend.ReadTrafficAsync(); if (counters == null) await Task.Delay(100); }
+                if (counters == null || counters.Downloaded < 0 || counters.Uploaded < 0) throw new InvalidDataException($"{kind}: native traffic telemetry unavailable.");
+                results.Add($"PASS {kind}: native owned-core traffic counter response parsed; no fabricated metrics");
                 try { await backend.StartAsync(library.Active.Server, CancellationToken.None); throw new InvalidDataException("Duplicate core was accepted."); }
                 catch (InvalidOperationException) { results.Add($"PASS {kind}: duplicate start rejected"); }
                 // The duplicate rejection must leave the original core alive.
                 if (backend.Port != port) throw new InvalidDataException("Duplicate rejection stopped the active core.");
                 await backend.StopAsync(CancellationToken.None);
+                if (await backend.ReadTrafficAsync() != null) throw new InvalidDataException("Stopped core retained traffic telemetry.");
                 if (!backend.LastStopWasGraceful) throw new InvalidDataException($"{kind}: graceful console shutdown was not confirmed.");
                 using var client = new TcpClient();
                 try { await client.ConnectAsync(IPAddress.Loopback, port); throw new InvalidDataException("Listener survived core stop."); }

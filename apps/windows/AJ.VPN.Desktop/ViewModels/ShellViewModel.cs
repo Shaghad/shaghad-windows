@@ -52,7 +52,7 @@ public sealed partial class ShellViewModel : ObservableObject
         ActivateCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) { await library.SelectAsync(SelectedServer.Server.Id); await library.SetSelectionModeAsync(SelectionMode.Manual); } RefreshLibrary(); }, HandleFailure);
         RemoveServerCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.RemoveProfileAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
         ConnectCommand = new AsyncCommand(async () => { connectOperation = ConnectAsync(); await connectOperation; }, HandleFailure);
-        DisconnectCommand = new AsyncCommand(DisconnectAsync, HandleFailure);
+        DisconnectCommand = new AsyncCommand(async () => { manualDisconnect = true; failoverPolicy.Reset(); await DisconnectAsync(); }, HandleFailure);
         ProbeCommand = new AsyncCommand(ProbeAsync, HandleFailure);
         AddSubscriptionCommand = new AsyncCommand(async () => { EnsureIdle(); if (EditingSubscriptionId != null) await library.EditSubscriptionAsync(EditingSubscriptionId, SubscriptionName, SubscriptionUrl); else await library.AddSubscriptionAsync(SubscriptionName, SubscriptionUrl); EditingSubscriptionId = null; SubscriptionUrl = ""; RefreshLibrary(); Notice = "Subscription saved with Windows user encryption. Update explicitly to import its servers."; }, HandleFailure);
         UpdateSubscriptionCommand = new AsyncCommand(async () =>
@@ -90,6 +90,7 @@ public sealed partial class ShellViewModel : ObservableObject
     private static string Resource(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
     public void RefreshLocalizedText()
     {
+        RaiseMonitoring();
         Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification)); Raise(nameof(ConsumerStatus)); Raise(nameof(Location)); Raise(nameof(ConnectionMode)); Raise(nameof(NeedsServer));
         if (ServerView != null) RefreshPremiumLibrary();
         RaiseAuto(); Raise(nameof(TestProgressText));
@@ -119,7 +120,8 @@ public sealed partial class ShellViewModel : ObservableObject
     public string SubscriptionUrl { get => subscriptionUrl; set => Set(ref subscriptionUrl, value); }
     public ObservableCollection<SavedProfile> Servers { get; } = [];
     public ObservableCollection<Subscription> Subscriptions { get; } = [];
-    public string ApplicationVersion => typeof(ShellViewModel).Assembly.GetName().Version?.ToString(3) ?? "Unavailable";
+    public string ApplicationVersion => typeof(ShellViewModel).Assembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+        .OfType<System.Reflection.AssemblyInformationalVersionAttribute>().FirstOrDefault()?.InformationalVersion.Split('+')[0] ?? "Unavailable";
     public string GitHubRepository => "https://github.com/Shaghad/shaghad-windows";
     public string CurrentPage { get => currentPage; set => Set(ref currentPage, value); }
     public string Notice { get => notice; private set => Set(ref notice, value); }
@@ -204,6 +206,7 @@ public sealed partial class ShellViewModel : ObservableObject
     }
     private void RefreshState()
     {
+        if (State != ConnectionState.Connected) { traffic = trafficCalculator.Update(null); RaiseMonitoring(); }
         if (State is ConnectionState.Disconnected or ConnectionState.Error)
         {
             ipCancellation?.Cancel(); PublicIp = "—"; Latency = "—"; connectedAt = null;
@@ -224,6 +227,7 @@ public sealed partial class ShellViewModel : ObservableObject
     }
     private async Task ConnectAsync()
     {
+        manualDisconnect = false; failoverPolicy.Reset(); lastProbeTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
         EnsureIdle(); if (!IsAuto && SelectedServer == null) { Notice = Resource("EmptyServerManager"); return; }
         Busy = true; Latency = "—"; networkCancellation = new();
         try
@@ -241,8 +245,8 @@ public sealed partial class ShellViewModel : ObservableObject
             }
             if (candidate == null) { Notice = Resource("NoHealthyServers"); return; }
             await library.SelectAsync(candidate.Server.Id, networkCancellation.Token);
-            connectedServer = candidate.Server;
-            await connection.ConnectAsync(candidate.Server, networkCancellation.Token); connectedAt = DateTimeOffset.UtcNow; await ProbeAsync();
+            connectedServer = desiredServer = candidate.Server;
+            await connection.ConnectAsync(candidate.Server, networkCancellation.Token); connectedAt = System.Diagnostics.Stopwatch.GetTimestamp(); await ProbeAsync();
             CoreSummary = backend.Version;
             Notice = InternetVerified ? "HTTPS verified through the selected server. System Proxy can be enabled in Settings." : "Local proxy ready; internet access could not be verified. Retry the HTTPS test.";
         }
@@ -289,7 +293,7 @@ public sealed partial class ShellViewModel : ObservableObject
         else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings."; Raise(nameof(ConnectionMode));
     }
     private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD · Windows System Proxy", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
-    public async Task ShutdownAsync() { testCancellation?.Cancel(); if (testOperation != null) { try { await testOperation; } catch { } } await DisconnectAsync(); }
+    public async Task ShutdownAsync() { manualDisconnect = true; durationTimer?.Stop(); monitoringCancellation.Cancel(); if (monitoringOperation != null) { try { await monitoringOperation; } catch { } } testCancellation?.Cancel(); if (testOperation != null) { try { await testOperation; } catch { } } await DisconnectAsync(); monitoringCancellation.Dispose(); }
     private void HandleFailure(Exception _)
     {
         Notice = _ switch

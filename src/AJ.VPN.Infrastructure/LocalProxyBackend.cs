@@ -9,13 +9,16 @@ using Microsoft.Extensions.Logging;
 namespace AJ.VPN.Infrastructure;
 
 public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catalog, ICoreConfigurationGenerator generator,
-    string dataDirectory, string helperExecutable, ILogger<LocalProxyBackend> logger) : ILocalProxyBackend, IDisposable
+    string dataDirectory, string helperExecutable, ILogger<LocalProxyBackend> logger) : ILocalProxyBackend, ITrafficBackend, IDisposable
 {
     private readonly SemaphoreSlim gate = new(1, 1);
     private OwnedCoreProcess? owned;
     private FileStream? executableLock;
     private string? session;
     private bool stopping;
+    private int? telemetryPort;
+    private string? telemetrySecret, telemetryExecutable;
+    private CoreKind telemetryKind;
     public int? Port { get; private set; }
     public int? OwnedProcessId => owned?.Process.Id;
     public string Version { get; private set; } = "Not initialized";
@@ -50,7 +53,27 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
             var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start(); var port = ((IPEndPoint)listener.LocalEndpoint).Port; listener.Stop();
             var path = Path.Combine(session, "config.json");
-            await File.WriteAllTextAsync(path, generator.Generate(profile, installation.Kind, port), cancellationToken);
+            System.Text.Json.Nodes.JsonObject configuration;
+            try { configuration = System.Text.Json.Nodes.JsonNode.Parse(generator.Generate(profile, installation.Kind, port))!.AsObject(); }
+            catch (System.Text.Json.JsonException) { throw new InvalidDataException("Generated configuration is not valid JSON."); }
+            var telemetryListener = new TcpListener(IPAddress.Loopback, 0);
+            telemetryListener.Start(); telemetryPort = ((IPEndPoint)telemetryListener.LocalEndpoint).Port; telemetryListener.Stop();
+            telemetryKind = installation.Kind; telemetryExecutable = installation.Path;
+            if (installation.Kind == CoreKind.Xray)
+            {
+                configuration["stats"] = new System.Text.Json.Nodes.JsonObject();
+                configuration["policy"] = System.Text.Json.Nodes.JsonNode.Parse("{\"system\":{\"statsOutboundUplink\":true,\"statsOutboundDownlink\":true}}");
+                configuration["api"] = new System.Text.Json.Nodes.JsonObject { ["tag"] = "telemetry", ["listen"] = $"127.0.0.1:{telemetryPort}",
+                    ["services"] = new System.Text.Json.Nodes.JsonArray("StatsService") };
+            }
+            else
+            {
+                telemetrySecret = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+                configuration["experimental"] = new System.Text.Json.Nodes.JsonObject { ["clash_api"] = new System.Text.Json.Nodes.JsonObject {
+                    ["external_controller"] = $"127.0.0.1:{telemetryPort}", ["secret"] = telemetrySecret,
+                    ["access_control_allow_origin"] = new System.Text.Json.Nodes.JsonArray("http://127.0.0.1"), ["access_control_allow_private_network"] = false } };
+            }
+            await File.WriteAllTextAsync(path, configuration.ToJsonString(), cancellationToken);
             failureEvent = 622;
             var check = await TrustedCoreCatalog.RunCheckAsync(installation.Path,
                 installation.Kind == CoreKind.Xray ? ["run", "-test", "-c", path] : ["check", "-c", path], cancellationToken);
@@ -124,6 +147,7 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
     }
     private async Task CleanupAsync()
     {
+        telemetryPort = null; telemetrySecret = null; telemetryExecutable = null;
         stopping = true; Port = null; LastProbe = null; PublicExitAddress = null;
         if (owned != null)
         {
@@ -189,6 +213,33 @@ public sealed class LocalProxyBackend(LibraryService library, ICoreCatalog catal
             return false;
         }
         finally { Marshal.FreeHGlobal(memory); }
+    }
+    public async Task<TrafficCounters?> ReadTrafficAsync(CancellationToken token = default)
+    {
+        var process = owned; var id = session; var apiPort = telemetryPort; var exe = telemetryExecutable;
+        if (process == null || process.Process.HasExited || id == null || apiPort == null || exe == null || Port == null
+            || !OwnsListener(process.Process.Id, apiPort.Value)) return null;
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token); timeout.CancelAfter(TimeSpan.FromSeconds(3));
+            TrafficCounters? result;
+            if (telemetryKind == CoreKind.Xray)
+            {
+                var query = await TrustedCoreCatalog.RunCheckAsync(exe, ["api", "statsquery", $"--server=127.0.0.1:{apiPort}", "-timeout=2", "-pattern=outbound>>>proxy>>>traffic>>>"], timeout.Token);
+                result = query.ExitCode == 0 ? TrafficCounterParser.ParseXray(query.Output, id) : null;
+            }
+            else
+            {
+                using var handler = new HttpClientHandler { UseProxy = false, AllowAutoRedirect = false, UseCookies = false };
+                using var client = new HttpClient(handler) { MaxResponseContentBufferSize = 1024 * 1024 };
+                client.DefaultRequestHeaders.Authorization = new("Bearer", telemetrySecret);
+                var json = await client.GetStringAsync($"http://127.0.0.1:{apiPort}/connections", timeout.Token);
+                result = TrafficCounterParser.ParseSingBox(json, id);
+            }
+            return owned == process && session == id && Port != null ? result : null;
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or System.Text.Json.JsonException or HttpRequestException or FormatException or OverflowException or InvalidOperationException or IOException)
+        { token.ThrowIfCancellationRequested(); return null; }
     }
     public void Dispose() { stopping = true; owned?.Dispose(); executableLock?.Dispose(); }
     [DllImport("iphlpapi.dll")] private static extern uint GetExtendedTcpTable(IntPtr table, ref int size, bool order, int family, int tableClass, uint reserved);

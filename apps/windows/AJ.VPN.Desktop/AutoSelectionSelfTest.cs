@@ -49,6 +49,21 @@ internal static class AutoSelectionSelfTest
             await ExecuteAsync(vm.ConnectCommand);
             if (vm.State != ConnectionState.Connected || !vm.InternetVerified || vm.ResolvedServerId != resolved) throw new InvalidOperationException("Dashboard Auto did not connect through the resolved real profile.");
             var pid = active.OwnedProcessId; var listener = active.Port;
+            var firstTraffic = await active.ReadTrafficAsync() ?? throw new InvalidDataException("Native traffic counters unavailable after verified HTTPS.");
+            await ExecuteAsync(vm.ProbeCommand);
+            var secondTraffic = await active.ReadTrafficAsync() ?? throw new InvalidDataException("Native traffic counters disappeared.");
+            if (secondTraffic.Downloaded <= firstTraffic.Downloaded || secondTraffic.Uploaded <= firstTraffic.Uploaded)
+                throw new InvalidDataException("Actual proxied HTTPS did not increment traffic counters.");
+            await Task.Delay(2500);
+            vm.CurrentPage = "Dashboard";
+            foreach (var theme in new[] { ThemePreference.Dark, ThemePreference.Light })
+            {
+                appearance(new(1, theme, "en")); await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+                SmokeTest.RenderNative(window, Path.Combine(output, $"Dashboard-Connected-{theme}.png"));
+            }
+            vm.CurrentPage = "Statistics";
+            await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
+            SmokeTest.RenderNative(window, Path.Combine(output, "Statistics-Live.png"));
             await ExecuteAsync(vm.TestAllCommand);
             if (active.OwnedProcessId != pid || active.Port != listener || vm.State != ConnectionState.Connected || !vm.InternetVerified || vm.ResolvedServerId != resolved)
                 throw new InvalidOperationException("Test All disturbed the established Auto connection.");
@@ -60,6 +75,7 @@ internal static class AutoSelectionSelfTest
                 ProviderConnectivity = "Not tested; no authorized remote provider profile available",
                 AutoResolvedHealthyCandidate = true, DashboardConnectUsedAuto = true, ActivePidAndPortPreservedByTestAll = true,
                 WindowsProxyUnchanged = true, ActualHttpsVerified = vm.InternetVerified, ActualExitIpMeasured = vm.HasPublicIp,
+                RealNativeTrafficIncreased = true,
                 Measurements = vm.ServerRows.Select(r => new { r.Result?.Health, r.Result?.Milliseconds, r.Result?.SuccessfulAttempts }),
                 SelectionMode = vm.SelectedModeDisplay
             }, new JsonSerializerOptions { WriteIndented = true }));

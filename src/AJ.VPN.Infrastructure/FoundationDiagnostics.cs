@@ -23,6 +23,16 @@ public sealed class FoundationDiagnostics(ICoreCatalog catalog, ILocalProxyBacke
         results.Add(new("Public Exit IP", active ? backend.PublicExitAddress ?? "Not measured or unavailable." : "Not measured for the current session.", "Measured using an explicit SOCKS5 HTTPS IP endpoint; never logged.", "Run the HTTPS test with a reachable server."));
         results.Add(new("Latency", probe?.Success == true && probe.Milliseconds is long latency ? $"{latency} ms (HTTPS request elapsed time)" : "Not measured.", "This is HTTP request timing, not ICMP ping or throughput.", "Run the HTTPS test to measure again."));
         results.Add(new("Last Connection Error", backend.LastError ?? "No recorded connection error.", "Only sanitized categories and controlled compatibility messages are shown.", "Retry after resolving the reported cause."));
+        if (backend.Port is int familyPort)
+        {
+            foreach (var family in new[] { "IPv4", "IPv6" })
+            {
+                var familyProbe = await ProxyConnectivityProbe.RunEndpointAsync(familyPort, true, family, cancellationToken);
+                results.Add(new(family + " Connectivity", backend.Port == familyPort ? familyProbe.Message : "Session changed during the check; result discarded.",
+                    "Explicit SOCKS5 HTTPS family endpoint. This measures remote exit availability, not the device interface family or packet-level DNS leaks.", "Retry explicitly from Diagnostics; no system DNS or routes are modified."));
+            }
+        }
+        else foreach (var family in new[] { "IPv4", "IPv6" }) results.Add(new(family + " Connectivity", "Unavailable without an active local proxy.", "No direct request was sent.", "Connect then run Diagnostics explicitly."));
         foreach (var kind in Enum.GetValues<CoreKind>())
         {
             try { var core = await catalog.FindAsync(kind, cancellationToken); results.Add(new("Verified", $"{kind} {core.Version}: executable hash and version match.", "Pinned official Windows x64 release.", "Native configuration validation runs before every connection.")); }

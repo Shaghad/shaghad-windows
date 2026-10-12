@@ -1,4 +1,4 @@
-param([string]$Output = 'artifacts/phase3-secret-audit.json')
+param([string]$Output = 'artifacts/phase3-secret-audit.json', [switch]$FailOnUnreviewed)
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
 Push-Location $repo
@@ -48,5 +48,15 @@ try {
     $destination = Join-Path $repo $Output
     [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($destination)) | Out-Null
     [IO.File]::WriteAllText($destination, ($report | ConvertTo-Json -Depth 6))
+    if ($FailOnUnreviewed) {
+        $reviewed = Get-Content (Join-Path $repo 'scripts/secret-audit-reviewed.json') | ConvertFrom-Json
+        foreach ($finding in $findings) {
+            $path = if ($finding.location.StartsWith('working:')) { $finding.location.Substring(8) } else { $finding.location.Split(':',3)[2] }
+            $content = if ($finding.location.StartsWith('working:')) { [IO.File]::ReadAllText((Join-Path $repo $path)) } else { (git cat-file blob $finding.location.Split(':',3)[1]) -join "`n" }
+            $line = ($content -split '\r?\n')[$finding.line - 1]
+            $digest = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($line)))
+            if (-not @($reviewed | Where-Object { $_.path -eq $path -and $_.rule -eq $finding.rule -and $_.lineHash -eq $digest }).Count) { throw 'Unreviewed secret-audit reference; inspect the value-suppressed report before publication.' }
+        }
+    }
     "Scanned $($files.Count) current text files and $($seen.Count) historical text blobs; $($findings.Count) references need review. Values suppressed."
 } finally { Pop-Location }

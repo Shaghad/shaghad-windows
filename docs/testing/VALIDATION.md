@@ -139,3 +139,6 @@ No real subscription URL, server credential or core binary was provided/used. VP
 ## Phase 4 final validation — 2026-10-11
 
 See [server selection validation](SERVER-SELECTION-VALIDATION.md) for 110 passing tests, 23 native checks, the final real WPF matrix and approved remote Auto/Test All results. Earlier phase results remain historical evidence.
+
+## Phase 5 — 2026-10-12
+See [Phase 5 validation](PHASE5-VALIDATION.md): 122 passing automated tests, 25 native core checks, actual WPF evidence and explicit pending release gates.

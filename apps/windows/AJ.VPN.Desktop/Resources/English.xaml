@@ -126,5 +126,19 @@
  <sys:String x:Key="HealthUnsupported">Unsupported by selected core</sys:String>
  <sys:String x:Key="HealthUnsupportedShort">Unsupported</sys:String>
  <sys:String x:Key="HealthCancelled">Cancelled</sys:String>
+ <sys:String x:Key="ProxyTrafficScope">Application-owned proxy traffic · includes probes</sys:String>
+ <sys:String x:Key="FastestServersLabel">Fastest servers · recent HTTPS results</sys:String>
+ <sys:String x:Key="AutoFailoverLabel">Automatic failover (Auto mode only, off by default)</sys:String>
+ <sys:String x:Key="AutoRecoveryLabel">Recover after resume or network change (off by default)</sys:String>
+ <sys:String x:Key="RecoveryPolicyHint">Three failures, two attempts, two-minute cooldown. System Proxy reconnect is blocked until ownership transfer is validated.</sys:String>
+ <sys:String x:Key="RecoveryProxyBlocked">Automatic recovery stopped: System Proxy ownership cannot safely transfer to a new listener. Previous settings restoration was attempted; review Settings.</sys:String>
+ <sys:String x:Key="RecoveryVerified">Recovered connection verified through HTTPS.</sys:String>
+ <sys:String x:Key="RecoveryUnverified">Local proxy recovered; internet verification pending.</sys:String>
+ <sys:String x:Key="RecoveryFailed">Recovery failed. Explicit Connect can retry.</sys:String>
+ <sys:String x:Key="QualityOffline">Offline</sys:String>
+ <sys:String x:Key="QualityUnverified">Unverified</sys:String>
+ <sys:String x:Key="QualityExcellent">Excellent</sys:String>
+ <sys:String x:Key="QualityGood">Good</sys:String>
+ <sys:String x:Key="QualityDegraded">Degraded</sys:String>
 </ResourceDictionary>
 

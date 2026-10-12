@@ -13,6 +13,7 @@ public sealed class ConnectionService
     }
     private readonly SemaphoreSlim gate = new(1, 1);
     private long generation;
+    public long SessionGeneration => Interlocked.Read(ref generation);
     public ConnectionState State { get; private set; } = ConnectionState.Disconnected;
     public bool InternetVerified { get; private set; }
     public event EventHandler? StateChanged;

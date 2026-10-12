@@ -13,6 +13,12 @@ public partial class MainWindow : Window
         DataContext = viewModel; Resources["NavigationIconMargin"] = new Thickness(0,0,12,0);
         viewModel.CountryEditRequested += (_, id) => OpenCountryEditor(id);
         SourceInitialized += (_, _) => UpdateNativeCaption();
+        PreviewKeyDown += (_, key) => { if (key.Key == System.Windows.Input.Key.Escape && Sidebar.Visibility == Visibility.Visible) { CloseDrawer(); key.Handled = true; } };
+        viewModel.PropertyChanged += (_, change) => { if (change.PropertyName == nameof(ShellViewModel.CurrentPage) && Sidebar.Visibility == Visibility.Visible) CloseDrawer(); };
+        Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerModeChanged;
+        System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailability;
+        System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddress;
+        Closed += (_, _) => { Microsoft.Win32.SystemEvents.PowerModeChanged -= OnPowerModeChanged; System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailability; System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddress; };
         UpdateLayoutDensity();
         SizeChanged += (_, _) => UpdateLayoutDensity();
         Closing += async (_, args) =>
@@ -27,6 +33,13 @@ public partial class MainWindow : Window
             finally { shutdownComplete = true; Close(); }
         };
     }
+    private void OnPowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs e) => Dispatcher.InvokeAsync(() => {
+        var vm = (ShellViewModel)DataContext;
+        if (e.Mode == Microsoft.Win32.PowerModes.Suspend) vm.SuspendMonitoring();
+        else if (e.Mode == Microsoft.Win32.PowerModes.Resume) vm.ResumeMonitoring();
+    });
+    private void OnNetworkAvailability(object? sender, System.Net.NetworkInformation.NetworkAvailabilityEventArgs e) { if (e.IsAvailable) Dispatcher.InvokeAsync(() => ((ShellViewModel)DataContext).ResumeMonitoring()); }
+    private void OnNetworkAddress(object? sender, EventArgs e) => Dispatcher.InvokeAsync(() => ((ShellViewModel)DataContext).ResumeMonitoring());
     private void UpdateLayoutDensity()
     {
         // Real layout adaptation: less spacing at short/narrow sizes, never transforms or fixed clipping.
@@ -36,36 +49,32 @@ public partial class MainWindow : Window
         Resources["ContentMargin"] = compact ? new Thickness(20, 8, 20, 8) : new Thickness(28, 22, 28, 22);
         Resources["SidebarPadding"] = compact ? new Thickness(10, 12, 10, 12) : new Thickness(10, 16, 10, 16);
         Resources["SidebarHeaderMargin"] = new Thickness(0, 0, 0, compact ? 10 : 22);
-        Resources["NavigationPadding"] = sidebarCompact ? new Thickness(6) : compact ? new Thickness(10, 6, 10, 6) : new Thickness(12, 10, 12, 10);
+        Resources["NavigationPadding"] = compact ? new Thickness(10, 6, 10, 6) : new Thickness(12, 10, 12, 10);
         Resources["NavigationMinHeight"] = compact ? 36d : 44d;
         Resources["HeadingSize"] = compact ? 24d : 30d;
         Resources["WelcomeVisibility"] = compact ? Visibility.Collapsed : Visibility.Visible;
         Resources["DashboardHeroHeight"] = compact ? 206d : 240d;
         Resources["DashboardStatusSize"] = compact ? 26d : 32d;
     }
-    private bool sidebarCompact;
     internal void ToggleSidebar(object sender, RoutedEventArgs e)
     {
-        sidebarCompact = !sidebarCompact;
-        SidebarColumn.Width = new GridLength(sidebarCompact ? 68 : 184);
-        Resources["NavigationContentVisibility"] = sidebarCompact ? Visibility.Collapsed : Visibility.Visible;
-        Resources["NavigationIconMargin"] = sidebarCompact ? new Thickness(0) : new Thickness(0,0,12,0);
-        if (sidebarCompact) {
-            Resources["NavigationPadding"] = new Thickness(6);
-            SidebarExitButton.Content = "\uE8BB";
-            SidebarExitButton.FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
-            SidebarExitButton.Padding = new Thickness(4);
-        } else {
-            UpdateLayoutDensity();
-            SidebarExitButton.SetResourceReference(System.Windows.Controls.ContentControl.ContentProperty, "Exit");
-            SidebarExitButton.SetResourceReference(FontFamilyProperty, "UiFont");
-            SidebarExitButton.Padding = new Thickness(14,6,14,6);
-        }
-        foreach (var panel in Sidebar.Child is System.Windows.Controls.DockPanel dock ? dock.Children.OfType<System.Windows.Controls.StackPanel>() : [])
+        if (Sidebar.Visibility == Visibility.Visible) CloseDrawer();
+        else
         {
-            foreach (var child in panel.Children.OfType<FrameworkElement>())
-                if (child is System.Windows.Controls.DockPanel) child.Visibility = sidebarCompact ? Visibility.Collapsed : Visibility.Visible;
+            Sidebar.Visibility = Visibility.Visible;
+            Sidebar.Opacity = 1;
+            if (SystemParameters.ClientAreaAnimation)
+                Sidebar.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)));
+            Sidebar.UpdateLayout();
+            DrawerCloseButton.Focus();
+            System.Windows.Input.FocusManager.SetFocusedElement(Sidebar, DrawerCloseButton);
         }
+    }
+    private void CloseDrawer()
+    {
+        Sidebar.BeginAnimation(OpacityProperty, null);
+        Sidebar.Visibility = Visibility.Collapsed;
+        HamburgerButton.Focus();
     }
     internal void UpdateNativeCaption()
     {
