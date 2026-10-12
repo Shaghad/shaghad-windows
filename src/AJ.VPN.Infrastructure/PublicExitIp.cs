@@ -12,13 +12,15 @@ public static class PublicExitIp
             (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && value != ip.ToString())) return null;
         return ip.ToString();
     }
-    public static async Task<string?> FetchAsync(int port, CancellationToken token = default)
+    public static Task<string?> FetchDirectAsync(CancellationToken token = default) => FetchMeasuredAsync(null, token);
+    public static Task<string?> FetchAsync(int port, CancellationToken token = default) => FetchMeasuredAsync(port, token);
+    private static async Task<string?> FetchMeasuredAsync(int? port, CancellationToken token)
     {
         if (port is < 1 or > 65535) throw new ArgumentOutOfRangeException(nameof(port));
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         timeout.CancelAfter(TimeSpan.FromSeconds(10));
         using var handler = new SocketsHttpHandler {
-            Proxy = new WebProxy($"socks5://127.0.0.1:{port}"), UseProxy = true,
+            Proxy = port.HasValue ? new WebProxy($"socks5://127.0.0.1:{port}") : null, UseProxy = port.HasValue,
             AllowAutoRedirect = false, UseCookies = false, MaxResponseHeadersLength = 16
         };
         using var client = new HttpClient(handler);

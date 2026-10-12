@@ -24,15 +24,17 @@ public sealed partial class ShellViewModel
     private bool fullScopeFailed;
     private int testTotal, testCompleted, testHealthy, testFailed;
     public string? EditingSubscriptionId { get; set; }
-    public string PublicIp { get => publicIp; private set { Set(ref publicIp, value); Raise(nameof(HasPublicIp)); } }
+    public string PublicIp { get => publicIp; private set { Set(ref publicIp, value); ipVerifiedAt = value == "—" ? null : DateTimeOffset.UtcNow; Raise(nameof(HasPublicIp)); Raise(nameof(PublicIpDisplay)); Raise(nameof(IpVerificationDisplay)); } }
     public bool HasPublicIp => PublicIp != "—";
     public bool NeedsSubscription => Subscriptions.Count == 0;
+    public bool HasSubscriptions => Subscriptions.Count > 0;
     public bool NeedsServer => Servers.Count == 0;
     public bool CanProbe => State == ConnectionState.Connected && !Busy;
     public string ConsumerStatus => State == ConnectionState.Connected ? Resource(InternetVerified ? "InternetVerified" : "CoreReadyLabel") : Resource(State == ConnectionState.Error ? "ConnectionError" : State.ToString());
     public string Protocol => DisplayServer?.Protocol.ToUpperInvariant() ?? "—";
     public string Location => DisplayServer?.Country ?? Resource("UnknownLocation");
     public string ConnectionMode => proxy.IsApplied ? Resource("SystemProxyMode") : Resource("LocalProxyMode");
+    public string TrafficRoutingSummary => Resource(proxy.IsApplied ? "ProxyTrafficEnabled" : "ProxyTrafficOff");
     public string Duration => connectedAt is { } start && State == ConnectionState.Connected ? FormatDuration(System.Diagnostics.Stopwatch.GetElapsedTime(start)) : "—";
     private static string FormatDuration(TimeSpan elapsed) => $"{(long)elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00}";
     public ICollectionView ServerView { get; private set; } = null!;
@@ -41,7 +43,7 @@ public sealed partial class ShellViewModel
     public bool IsAuto => library.Current.SelectionMode == SelectionMode.Auto;
     public string SelectedModeDisplay => Resource(IsAuto ? "AutoShort" : "ManualMode");
     public string? ResolvedServerId { get => resolvedServerId; private set { Set(ref resolvedServerId, value); RaiseAuto(); } }
-    public string AutoServerDisplay => library.Current.Profiles.Find(p => p.Server.Id == ResolvedServerId)?.Server.Name ?? Resource(fullScopeFailed ? "NoHealthyServers" : "AutoNotEvaluated");
+    public string AutoServerDisplay => library.Current.Profiles.Find(p => p.Server.Id == ResolvedServerId) is { } profile ? SafeServerName(profile.Server.Name) : Resource(fullScopeFailed ? "NoHealthyServers" : "AutoNotEvaluated");
     public string AutoLatencyDisplay => library.Current.Profiles.Find(p => p.Server.Id == ResolvedServerId) is { } p && selection.Recent(p, SelectedCore) is { IsHealthy: true } r ? $"{r.Milliseconds} ms" : "—";
     public string TotalServersDisplay => $"{Resource("TotalLabel")}: {Servers.Count}";
     public bool Testing { get => testing; private set { Set(ref testing, value); Raise(nameof(CanTest)); Raise(nameof(CanEdit)); Raise(nameof(HasTestProgress)); Raise(nameof(TestProgressText)); } }
@@ -80,7 +82,7 @@ public sealed partial class ShellViewModel
         UpdateAllCommand = new AsyncCommand(async () => {
             EnsureIdle(); Busy = true; networkCancellation = new();
             try { foreach (var sub in library.Current.Subscriptions.ToArray()) await library.UpdateSubscriptionAsync(sub.Id, networkCancellation.Token); RefreshLibrary(); Notice = "Subscriptions updated."; }
-            finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; }
+            finally { RefreshLibrary(); Busy = false; networkCancellation.Dispose(); networkCancellation = null; }
         }, HandleFailure);
         durationTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         durationTimer.Tick += (_, _) => { Raise(nameof(Duration)); if (!Testing) RefreshCachedResults(); Raise(nameof(FastestServers)); BeginMonitoringTick(); };
@@ -127,11 +129,19 @@ public sealed partial class ShellViewModel
         }
         ServerRows.ReplaceAll(nextRows);
         RefreshRowSelection();
-        SubscriptionRows.Clear(); foreach (var source in Subscriptions) SubscriptionRows.Add(new(source));
+        SubscriptionRows.Clear(); foreach (var source in Subscriptions)
+        {
+            var row = new SubscriptionRow(source);
+            row.UpdateCommand = new AsyncCommand(async () => { SelectedSubscription = source; await UpdateSubscriptionByIdAsync(source.Id); }, HandleFailure);
+            row.EditCommand = new RelayCommand(_ => { SelectedSubscription = source; SubscriptionEditRequested?.Invoke(this, source.Id); });
+            row.RemoveCommand = new AsyncCommand(async () => { EnsureIdle(); if (Confirm(Resource("RemoveSubscriptionConfirm"))) { await library.RemoveSubscriptionAsync(source.Id); RefreshLibrary(); } }, HandleFailure);
+            SubscriptionRows.Add(row);
+        }
         foreach (var sub in SubscriptionRows) sub.Summary = $"{library.Current.Profiles.Count(p => p.SubscriptionId == sub.Id)} {Resource("Servers")} · " + sub.UsageDisplay;
         if (ResolvedServerId != null && !Servers.Any(p => p.Server.Id == ResolvedServerId && selection.Recent(p, SelectedCore)?.IsHealthy == true)) ResolvedServerId = null;
-        Raise(nameof(NeedsSubscription)); Raise(nameof(SelectedServerRow)); Raise(nameof(SelectedSubscriptionRow)); RaiseAuto();
+        Raise(nameof(NeedsSubscription)); Raise(nameof(HasSubscriptions)); Raise(nameof(SelectedServerRow)); Raise(nameof(SelectedSubscriptionRow)); RaiseAuto();
     }
+    public event EventHandler<string>? SubscriptionEditRequested;
     public event EventHandler<string>? CountryEditRequested;
     public async Task SaveCountryAsync(string id, string? country) { await library.SetCountryAsync(id, country); RefreshLibrary(); }
     private void RefreshRowSelection()
@@ -216,6 +226,7 @@ public sealed class ServerRow(SavedProfile profile) : ObservableObject
     private static string Text(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
     public SavedProfile Profile { get; private set; } = profile;
     public Server Server => Profile.Server;
+    public string NameDisplay => Server.Name.Contains("://", StringComparison.Ordinal) ? Text("ImportedServerLabel") : Server.Name;
     public CoreKind Core { get; private set; }
     public ServerTestResult? Result { get; private set; }
     public bool IsSelected { get; private set; }
@@ -245,7 +256,7 @@ public sealed class ServerRow(SavedProfile profile) : ObservableObject
     public void Update(SavedProfile value, CoreKind core, ServerTestResult? result)
     {
         Profile = value; Core = core; Result = WithCompatibility(result);
-        foreach (var property in new[] { nameof(Profile), nameof(Server), nameof(Flag), nameof(CountryDisplay), nameof(StatusDisplay), nameof(PingDisplay), nameof(LastTestedDisplay), nameof(TestExplanation), nameof(ProtocolDisplay), nameof(FavoriteDisplay), nameof(StatusBrush) }) Raise(property);
+        foreach (var property in new[] { nameof(Profile), nameof(Server), nameof(NameDisplay), nameof(Flag), nameof(CountryDisplay), nameof(StatusDisplay), nameof(PingDisplay), nameof(LastTestedDisplay), nameof(TestExplanation), nameof(ProtocolDisplay), nameof(FavoriteDisplay), nameof(StatusBrush) }) Raise(property);
     }
 }
 public sealed class SubscriptionRow(Subscription source)
@@ -254,6 +265,9 @@ public sealed class SubscriptionRow(Subscription source)
     public Subscription Source => source;
     public string Id => source.Id;
     public string Name => source.Name;
+    public ICommand UpdateCommand { get; set; } = null!;
+    public ICommand EditCommand { get; set; } = null!;
+    public ICommand RemoveCommand { get; set; } = null!;
     public string Summary { get; set; } = "";
     public string UsageDisplay => $"{Text("RemainingLabel")}: {(source.RemainingBytes is long bytes ? $"{bytes / 1073741824d:0.##} GB ({Text("ProviderLabel")})" : Text("UnavailableLabel"))} · {Text("ExpiresLabel")}: {(source.ExpiresAt is { } expires ? expires.ToLocalTime().ToString("g") : Text("UnavailableLabel"))}";
     public string UpdateDisplay => source.UpdatedAt is { } time ? $"{Text("UpdatedLabel")} {time.ToLocalTime():g}" : Text("NotUpdatedLabel");

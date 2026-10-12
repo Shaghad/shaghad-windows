@@ -12,6 +12,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel; Resources["NavigationIconMargin"] = new Thickness(0,0,12,0);
         viewModel.CountryEditRequested += (_, id) => OpenCountryEditor(id);
+        viewModel.SubscriptionEditRequested += (_, _) => EditSubscription(this, new RoutedEventArgs());
         SourceInitialized += (_, _) => UpdateNativeCaption();
         PreviewKeyDown += (_, key) => { if (key.Key == System.Windows.Input.Key.Escape && Sidebar.Visibility == Visibility.Visible) { CloseDrawer(); key.Handled = true; } };
         viewModel.PropertyChanged += (_, change) => { if (change.PropertyName == nameof(ShellViewModel.CurrentPage) && Sidebar.Visibility == Visibility.Visible) CloseDrawer(); };
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
         System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailability;
         System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged += OnNetworkAddress;
         Closed += (_, _) => { Microsoft.Win32.SystemEvents.PowerModeChanged -= OnPowerModeChanged; System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged -= OnNetworkAvailability; System.Net.NetworkInformation.NetworkChange.NetworkAddressChanged -= OnNetworkAddress; };
+        InitializeSmartImport();
         UpdateLayoutDensity();
         SizeChanged += (_, _) => UpdateLayoutDensity();
         Closing += async (_, args) =>
@@ -61,8 +63,10 @@ public partial class MainWindow : Window
         if (Sidebar.Visibility == Visibility.Visible) CloseDrawer();
         else
         {
-            Sidebar.Visibility = Visibility.Visible;
+            DrawerBackdrop.Visibility = Visibility.Visible; ContentHost.IsEnabled = false; Sidebar.Visibility = Visibility.Visible;
             Sidebar.Opacity = 1;
+            var slide = new System.Windows.Media.TranslateTransform(); Sidebar.RenderTransform = slide;
+            if (SystemParameters.ClientAreaAnimation) slide.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, new System.Windows.Media.Animation.DoubleAnimation(-24, 0, TimeSpan.FromMilliseconds(140)));
             if (SystemParameters.ClientAreaAnimation)
                 Sidebar.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(140)));
             Sidebar.UpdateLayout();
@@ -73,7 +77,7 @@ public partial class MainWindow : Window
     private void CloseDrawer()
     {
         Sidebar.BeginAnimation(OpacityProperty, null);
-        Sidebar.Visibility = Visibility.Collapsed;
+        Sidebar.Visibility = Visibility.Collapsed; DrawerBackdrop.Visibility = Visibility.Collapsed; ContentHost.IsEnabled = true;
         HamburgerButton.Focus();
     }
     internal void UpdateNativeCaption()
@@ -111,17 +115,8 @@ public partial class MainWindow : Window
     }
     private void ShowImportEditor(bool clipboard)
     {
-        var vm = (ShellViewModel)DataContext;
-        if (!vm.CanEdit) return;
-        vm.PrepareImport();
-        if (clipboard) vm.ProfileInput = System.Windows.Clipboard.GetText();
-        var input = new System.Windows.Controls.TextBox { AcceptsReturn = true, Height = 160, MaxLength = 2_000_000, VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto, FlowDirection = FlowDirection.LeftToRight };
-        input.SetBinding(System.Windows.Controls.TextBox.TextProperty, new System.Windows.Data.Binding("ProfileInput") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
-        var button = new System.Windows.Controls.Button { Content = FindResource("Validate"), Command = vm.ValidateCommand, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,16,0,8) };
-        var status = new System.Windows.Controls.TextBlock();
-        status.SetBinding(System.Windows.Controls.TextBlock.TextProperty, "ProfileResult");
-        ShowEditor(FindResource("ImportServer").ToString()!, [new System.Windows.Controls.TextBlock { Text = FindResource("PreviewNotice").ToString(), Margin = new Thickness(0,0,0,16) }, input, button, status]);
-        vm.ProfileInput = "";
+        if (clipboard) { _ = InspectClipboardAsync(); return; }
+        ShowImportDialog();
     }
     internal void OpenSubscription(object sender, RoutedEventArgs e)
     {
@@ -136,23 +131,7 @@ public partial class MainWindow : Window
         vm.EditingSubscriptionId = sub.Id; vm.SubscriptionName = sub.Name; vm.SubscriptionUrl = sub.Url;
         ShowSubscriptionEditor();
     }
-    private void ShowSubscriptionEditor()
-    {
-        var vm = (ShellViewModel)DataContext;
-        if (!vm.CanEdit) return;
-        var name = new System.Windows.Controls.TextBox { MaxLength = 100 };
-        name.SetResourceReference(FlowDirectionProperty, "ContentFlowDirection");
-        name.SetBinding(System.Windows.Controls.TextBox.TextProperty, new System.Windows.Data.Binding("SubscriptionName") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
-        var url = new System.Windows.Controls.TextBox { MaxLength = 8192, FlowDirection = FlowDirection.LeftToRight };
-        url.SetBinding(System.Windows.Controls.TextBox.TextProperty, new System.Windows.Data.Binding("SubscriptionUrl") { UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged });
-        var status = new System.Windows.Controls.TextBlock { Margin = new Thickness(0,12,0,0) };
-        status.SetBinding(System.Windows.Controls.TextBlock.TextProperty, "Notice");
-        ShowEditor(vm.EditingSubscriptionId == null ? "Add subscription" : "Edit subscription", [
-            new System.Windows.Controls.TextBlock { Text = FindResource("SubscriptionName").ToString(), Margin = new Thickness(0,0,0,6) }, name,
-            new System.Windows.Controls.TextBlock { Text = "HTTPS URL", Margin = new Thickness(0,16,0,6) }, url,
-            new System.Windows.Controls.Button { Content = FindResource("Save"), Command = vm.AddSubscriptionCommand, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,16,0,0) }, status]);
-        vm.SubscriptionUrl = ""; vm.EditingSubscriptionId = null;
-    }
+    private void ShowSubscriptionEditor() => ShowSubscriptionDialog();
     private void ShowEditor(string title, FrameworkElement[] children)
     {
         var panel = new System.Windows.Controls.StackPanel { Margin = new Thickness(24) };

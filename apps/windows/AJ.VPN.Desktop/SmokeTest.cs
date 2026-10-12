@@ -172,7 +172,7 @@ internal static class SmokeTest
         window.Activate();
         main.ToggleSidebar(window, new RoutedEventArgs());
         await window.Dispatcher.InvokeAsync(() => window.UpdateLayout(), DispatcherPriority.ApplicationIdle);
-        RenderNative(window, Path.Combine(output, "Dashboard-compact-native.png"));
+        await Task.Delay(180); RenderNative(window, Path.Combine(output, "Dashboard-compact-native.png"));
         RenderNative(window, Path.Combine(output, "Dashboard-Hamburger-Open.png"));
         if (((FrameworkElement)window.FindName("Sidebar")).Visibility != Visibility.Visible || !((FrameworkElement)window.FindName("Sidebar")).IsKeyboardFocusWithin)
             throw new InvalidOperationException("Drawer opening did not move keyboard focus.");
@@ -336,7 +336,7 @@ internal static class SmokeTest
             foreach (var nested in Descendants(child)) yield return nested;
         }
     }
-    private static void Render(Window window, string path)
+    internal static void Render(Window window, string path)
     {
         var content = (FrameworkElement)window.Content;
         var width = content.ActualWidth > 0 ? content.ActualWidth : window.Width;

@@ -6,7 +6,7 @@
   <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition Width="*"/><ColumnDefinition Width="150"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
    <Image Source="{Binding Flag}" Width="32" Height="24" ToolTip="{Binding CountryDisplay}" AutomationProperties.Name="{Binding CountryDisplay}"/>
    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
-    <TextBlock Text="{Binding Server.Name}" FontSize="15" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding Server.Name}" FlowDirection="{DynamicResource ContentFlowDirection}"/>
+    <TextBlock Text="{Binding NameDisplay}" FontSize="15" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding NameDisplay}" FlowDirection="{DynamicResource ContentFlowDirection}"/>
     <DockPanel Margin="0,3,0,0"><TextBlock Text="{Binding ProtocolDisplay}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" FlowDirection="LeftToRight"/><TextBlock Text="{Binding SelectionDisplay}" FontSize="11" Foreground="{DynamicResource SymbolBrush}" Margin="10,0,0,0"/></DockPanel>
    </StackPanel>
    <StackPanel Grid.Column="2" VerticalAlignment="Center" ToolTip="{Binding LastTestedDisplay}">

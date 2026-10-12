@@ -12,7 +12,7 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,10"><TextBlock DockPanel.Dock="Right" Text="{Binding TotalServersDisplay}" Margin="24,0,0,0" Style="{StaticResource SecondaryText}" VerticalAlignment="Center"/><TextBlock Text="{DynamicResource Servers}" Style="{StaticResource Heading}" Margin="0"/></DockPanel>
     <Grid Grid.Row="1" Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-     <Grid Margin="0,2,12,2"><TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Padding="12,6" ToolTip="{DynamicResource SearchLabel}" AutomationProperties.Name="{DynamicResource SearchLabel}"/><TextBlock Text="{DynamicResource SearchLabel}" Margin="12,0" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Search}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></Grid>
+     <Grid Width="230" HorizontalAlignment="Left" Margin="0,2,12,2"><TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="10,0" Panel.ZIndex="1" IsHitTestVisible="False"/><TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" Padding="32,6,10,6" ToolTip="{DynamicResource SearchLabel}" AutomationProperties.Name="{DynamicResource SearchLabel}"/><TextBlock Text="{DynamicResource SearchLabel}" Margin="32,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Search}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock></Grid>
      <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="{DynamicResource ImportServer}" Click="OpenImport" IsEnabled="{Binding CanEdit}" Style="{StaticResource ShaghadPrimaryButton}"/><Button Content="{DynamicResource ClipboardImport}" Click="OpenClipboardImport" IsEnabled="{Binding CanEdit}"/><Button Content="{DynamicResource TestAllLabel}" Command="{Binding TestAllCommand}" IsEnabled="{Binding CanTest}"/>
       <Button Content="{DynamicResource SortLabel}" Click="OpenToolbarMenu" Margin="0,2,0,2"><Button.ContextMenu><ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}">
        <MenuItem Header="{DynamicResource LowestLatencySort}" Command="{Binding SortServersCommand}" CommandParameter="LowestLatency"/><MenuItem Header="{DynamicResource HighestLatencySort}" Command="{Binding SortServersCommand}" CommandParameter="HighestLatency"/><MenuItem Header="{DynamicResource NameLabel}" Command="{Binding SortServersCommand}" CommandParameter="Name"/><MenuItem Header="{DynamicResource CountryLabel}" Command="{Binding SortServersCommand}" CommandParameter="Country"/><MenuItem Header="{DynamicResource ProtocolLabel}" Command="{Binding SortServersCommand}" CommandParameter="Protocol"/><MenuItem Header="{DynamicResource LastTestedLabel}" Command="{Binding SortServersCommand}" CommandParameter="LastTested"/>
@@ -65,7 +65,8 @@
  </Window.Resources>
  <Grid x:Name="ApplicationShell" FlowDirection="LeftToRight" Background="{DynamicResource PageBrush}">
   <Grid.ColumnDefinitions><ColumnDefinition Width="0" x:Name="SidebarColumn"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-  <Border x:Name="Sidebar" Grid.ColumnSpan="2" Panel.ZIndex="20" Width="240" HorizontalAlignment="Left" Visibility="Collapsed" KeyboardNavigation.TabNavigation="Cycle" Padding="{DynamicResource SidebarPadding}" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+  <Border x:Name="DrawerBackdrop" Grid.ColumnSpan="2" Panel.ZIndex="19" Background="#88000000" Visibility="Collapsed" MouseDown="CloseBackdrop"/>
+  <Border FocusManager.IsFocusScope="True" KeyboardNavigation.ControlTabNavigation="Cycle" x:Name="Sidebar" Grid.ColumnSpan="2" Panel.ZIndex="20" Width="230" HorizontalAlignment="Left" Visibility="Collapsed" KeyboardNavigation.TabNavigation="Cycle" Padding="{DynamicResource SidebarPadding}" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
    <DockPanel>
     <StackPanel DockPanel.Dock="Top" Margin="{DynamicResource SidebarHeaderMargin}">
      <DockPanel FlowDirection="LeftToRight"><Image Source="{DynamicResource ShaghadSymbol}" Width="44" Height="44" Margin="0,0,10,0" AutomationProperties.Name="SHAGHAD symbol"/>
@@ -92,11 +93,9 @@
   <DockPanel x:Name="ContentHost" Grid.Column="1" FlowDirection="LeftToRight" Margin="{DynamicResource ContentMargin}">
    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12" FlowDirection="LeftToRight">
     <Button x:Name="HamburgerButton" Content="☰" Click="ToggleSidebar" DockPanel.Dock="Left" AutomationProperties.Name="Navigation menu" AutomationProperties.AutomationId="HamburgerButton" Width="44" Height="36"/>
+    <Button DockPanel.Dock="Right" Content="{DynamicResource Settings}" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
     <TextBlock Text="SHAGHAD" FontFamily="Segoe UI" FontWeight="SemiBold" FontSize="20" VerticalAlignment="Center" Margin="12,0"/>
    </DockPanel>
-   <TextBlock DockPanel.Dock="Bottom" Text="{Binding Notice}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" ToolTip="{Binding Notice}" AutomationProperties.LiveSetting="Polite" Margin="0,8,0,0">
-    <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource LocalizedText}"><Style.Triggers><DataTrigger Binding="{Binding Notice}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
-   </TextBlock>
    <Grid><ScrollViewer x:Name="PageScrollViewer" FlowDirection="LeftToRight" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0" CanContentScroll="False">
     <ScrollViewer.Style><Style TargetType="ScrollViewer"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ScrollViewer.Style>
     <ScrollViewer.Resources><Style TargetType="ScrollBar" BasedOn="{StaticResource ShaghadPageScrollBar}"/></ScrollViewer.Resources>
@@ -107,8 +106,8 @@
        <Grid.ColumnDefinitions><ColumnDefinition Width="42*"/><ColumnDefinition Width="58*"/></Grid.ColumnDefinitions>
        <Border x:Name="ConnectionCard" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Padding="20" Margin="0,0,20,0">
         <StackPanel VerticalAlignment="Center">
-         <Image Source="{DynamicResource ShaghadSymbol}" Width="58" Height="58" Margin="0,4,0,12"/>
-         <TextBlock Text="شغاد" FontFamily="{DynamicResource PersianFont}" FontSize="26" HorizontalAlignment="Center" Margin="0,0,0,18"/>
+
+
          <Button x:Name="DashboardAction" Style="{StaticResource DashboardPrimaryAction}" Width="174" Height="174" HorizontalAlignment="Center" AutomationProperties.AutomationId="ConnectButton" AutomationProperties.Name="{Binding ConsumerStatus}">
           <Button.Template><ControlTemplate TargetType="Button">
            <Grid><Ellipse x:Name="PowerRing" Fill="{DynamicResource PageBrush}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="3"/>
@@ -124,52 +123,53 @@
            </ControlTemplate.Triggers>
           </ControlTemplate></Button.Template>
          </Button>
-         <TextBlock Text="{Binding ConsumerStatus}" Style="{StaticResource LocalizedText}" TextAlignment="Center" FontSize="20" FontWeight="SemiBold" Margin="0,16,0,4"/>
-         <TextBlock Text="{Binding Verification}" Style="{StaticResource SecondaryText}" TextAlignment="Center" FontSize="12"/>
+         <TextBlock Text="{Binding Content, ElementName=DashboardAction}" Style="{StaticResource LocalizedText}" TextAlignment="Center" FontSize="20" FontWeight="SemiBold" Margin="0,16,0,4"/>
+
          <ProgressBar Height="3" IsIndeterminate="True" Margin="24,8" Visibility="{Binding Busy, Converter={StaticResource BooleanVisibility}}"/>
-         <Button Content="{DynamicResource ImportServer}" Click="OpenImport" Visibility="{Binding NeedsServer, Converter={StaticResource BooleanVisibility}}" Margin="0,10,0,0"/>
+         <Button Content="{DynamicResource AddServerToConnect}" Click="OpenImport" Visibility="{Binding NeedsServer, Converter={StaticResource BooleanVisibility}}" Margin="0,10,0,0"/>
         </StackPanel>
        </Border>
        <StackPanel Grid.Column="1">
         <TextBlock Text="{DynamicResource ConnectionStatus}" Style="{StaticResource SecondaryText}" FontSize="12"/>
-        <DockPanel Height="30" Margin="0,6,0,14"><Ellipse Width="8" Height="8" Fill="{DynamicResource AccentBrush}" Margin="0,0,8,0"/><TextBlock Text="{Binding ConsumerStatus}" Style="{StaticResource LocalizedText}" FontSize="20" FontWeight="SemiBold"/></DockPanel>
+        <DockPanel Height="30" Margin="0,6,0,14"><Ellipse Width="8" Height="8" Margin="0,0,8,0"><Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Fill" Value="{DynamicResource SecondaryTextBrush}"/><Style.Triggers><DataTrigger Binding="{Binding State}" Value="Connected"><Setter Property="Fill" Value="{DynamicResource WarningBrush}"/></DataTrigger><DataTrigger Binding="{Binding InternetVerified}" Value="True"><Setter Property="Fill" Value="{DynamicResource ConnectedBrush}"/></DataTrigger><DataTrigger Binding="{Binding State}" Value="Error"><Setter Property="Fill" Value="{DynamicResource ErrorBrush}"/></DataTrigger></Style.Triggers></Style></Ellipse.Style></Ellipse><TextBlock Text="{Binding ConsumerStatus}" Style="{StaticResource LocalizedText}" FontSize="20" FontWeight="SemiBold"/></DockPanel>
         <Border x:Name="SelectedServerCard" Height="82" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,12">
          <DockPanel><Image Source="{Binding ActiveFlag}" Width="30" Height="22" Margin="0,0,12,0"/>
           <StackPanel><TextBlock Text="{Binding ActiveServer}" Style="{StaticResource LocalizedText}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding Location}" Style="{StaticResource SecondaryText}" FontSize="12"/>
-           <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Protocol}"/><TextBlock Text=" · " /><TextBlock Text="{Binding CoreDisplay}"/><TextBlock x:Name="LatencyValue" Text="{Binding Latency}" Style="{StaticResource TechnicalText}" Margin="12,0,0,0"/></StackPanel>
+           <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Protocol}"/><TextBlock x:Name="LatencyValue" Text="{Binding Latency}" Style="{StaticResource TechnicalText}" Margin="12,0,0,0"/></StackPanel>
           </StackPanel></DockPanel>
         </Border>
-        <Border x:Name="ConnectionDetails" Height="100" Padding="0,12,0,12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
-         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <StackPanel><TextBlock Text="{DynamicResource ExitIpLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding PublicIp}" FontSize="22" FlowDirection="LeftToRight" FontWeight="SemiBold"/><TextBlock Text="{Binding ConnectionMode}" Style="{StaticResource SecondaryText}" FontSize="12"/></StackPanel>
-          <Button Grid.Column="1" Content="{DynamicResource CopyIp}" Command="{Binding CopyIpCommand}" IsEnabled="{Binding HasPublicIp}" VerticalAlignment="Center"/>
-         </Grid>
+        <Border x:Name="ConnectionDetails" Padding="16,12" CornerRadius="12" Background="{DynamicResource SurfaceBrush}" Margin="0,12,0,0">
+         <StackPanel>
+          <TextBlock Text="{DynamicResource ExitIpLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/>
+          <TextBlock Text="{Binding PublicIpDisplay}" FontSize="26" FontWeight="SemiBold" TextWrapping="Wrap"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="FlowDirection" Value="LeftToRight"/><Style.Triggers><DataTrigger Binding="{Binding HasPublicIp}" Value="False"><Setter Property="FlowDirection" Value="{DynamicResource ContentFlowDirection}"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+          <TextBlock Text="{Binding IpVerificationDisplay}" Style="{StaticResource SecondaryText}" FontSize="11"/>
+          <WrapPanel Margin="0,6,0,0"><Button Content="{DynamicResource CopyIp}" Command="{Binding CopyIpCommand}" IsEnabled="{Binding HasPublicIp}"/><Button Content="{DynamicResource RefreshLabel}" Command="{Binding ProbeCommand}" IsEnabled="{Binding CanProbe}"/><Button Content="{DynamicResource CompareIp}" Command="{Binding CompareIpCommand}" IsEnabled="{Binding CanProbe}"/></WrapPanel>
+         </StackPanel>
         </Border>
         <UniformGrid Columns="3" Margin="0,12,0,12">
-         <StackPanel><TextBlock Text="{DynamicResource DownloadLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding DownloadSpeed}" FontSize="16" FlowDirection="LeftToRight"/><TextBlock Text="{Binding TotalDownloaded}" Style="{StaticResource SecondaryText}" FontSize="11"/></StackPanel>
-         <StackPanel><TextBlock Text="{DynamicResource UploadLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding UploadSpeed}" FontSize="16" FlowDirection="LeftToRight"/><TextBlock Text="{Binding TotalUploaded}" Style="{StaticResource SecondaryText}" FontSize="11"/></StackPanel>
-         <StackPanel><TextBlock Text="{DynamicResource DurationLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding Duration}" FontSize="16" FlowDirection="LeftToRight"/><TextBlock Text="{Binding Quality}" Style="{StaticResource SecondaryText}" FontSize="11"/></StackPanel>
+         <StackPanel><TextBlock Text="{DynamicResource DownloadLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding DownloadSpeed}" FontSize="16" FlowDirection="LeftToRight"/></StackPanel>
+         <StackPanel><TextBlock Text="{DynamicResource UploadLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding UploadSpeed}" FontSize="16" FlowDirection="LeftToRight"/></StackPanel>
+         <StackPanel><TextBlock Text="{DynamicResource DurationLabel}" Style="{StaticResource SecondaryText}" FontSize="12"/><TextBlock Text="{Binding Duration}" FontSize="16" FlowDirection="LeftToRight"/></StackPanel>
         </UniformGrid>
-        <TextBlock Text="{DynamicResource ProxyTrafficScope}" Style="{StaticResource SecondaryText}" FontSize="11"/>
-        <TextBlock Text="{DynamicResource FastestServersLabel}" Style="{StaticResource LocalizedText}" FontWeight="SemiBold" Margin="0,12,0,4"/>
-        <ItemsControl ItemsSource="{Binding FastestServers}"><ItemsControl.ItemTemplate><DataTemplate>
-         <Button Command="{Binding ConnectCommand}" ToolTip="{Binding LastTestedDisplay}" HorizontalContentAlignment="Stretch" Padding="4" Margin="0,2">
-          <DockPanel><Image Source="{Binding Flag}" Width="24" Height="16" Margin="0,0,8,0"/><TextBlock DockPanel.Dock="Right" Text="{Binding PingDisplay}"/><TextBlock Text="{Binding Server.Name}" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding StatusDisplay}" FontSize="11" Foreground="{Binding StatusBrush}" Margin="8,0"/></DockPanel>
-         </Button>
-        </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-        <WrapPanel Margin="0,10,0,0"><Button Content="{DynamicResource ChangeServer}" Command="{Binding NavigateCommand}" CommandParameter="Servers"/><Button Content="{DynamicResource TestProxy}" Command="{Binding ProbeCommand}" IsEnabled="{Binding CanProbe}"/></WrapPanel>
+<TextBlock Text="{Binding TrafficRoutingSummary}" Style="{StaticResource SecondaryText}" FontSize="11"/>
+        <WrapPanel Margin="0,10,0,0"><Button Content="{DynamicResource ChangeServer}" Command="{Binding NavigateCommand}" CommandParameter="Servers"/></WrapPanel>
        </StackPanel>
       </Grid>
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Subscriptions"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
       <TextBlock Text="{DynamicResource Subscriptions}" Style="{StaticResource Heading}" Margin="0,0,0,24"/>
-      <WrapPanel Margin="0,0,0,16" IsEnabled="{Binding CanEdit}"><Button Content="{DynamicResource AddSubscription}" Click="OpenSubscription" Style="{StaticResource ShaghadPrimaryButton}"/><Button Content="{DynamicResource UpdateAllLabel}" Command="{Binding UpdateAllCommand}"/></WrapPanel>
-      <TextBlock Text="{DynamicResource EmptySubscriptionManager}" Style="{StaticResource SecondaryText}" Margin="0,0,0,12" Visibility="{Binding NeedsSubscription, Converter={StaticResource BooleanVisibility}}"/><TextBlock Text="{DynamicResource SubscriptionManagerHint}" Style="{StaticResource SecondaryText}" Margin="0,0,0,16"/>
-      <ListBox ItemsSource="{Binding SubscriptionRows}" SelectedItem="{Binding SelectedSubscriptionRow}" ItemContainerStyle="{StaticResource SubscriptionManagerRow}" Height="280" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}">
-       <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="10"><TextBlock Text="{Binding Name}" Style="{StaticResource LocalizedText}" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding Summary}" Style="{StaticResource LocalizedText}" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,6"/><TextBlock Text="{Binding UpdateDisplay}" Style="{StaticResource LocalizedText}" Foreground="{DynamicResource SecondaryTextBrush}"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+      <WrapPanel Margin="0,0,0,16" IsEnabled="{Binding CanEdit}"><Button Content="{DynamicResource AddSubscription}" Click="OpenSubscription" Style="{StaticResource ShaghadPrimaryButton}"/><Button Content="{DynamicResource UpdateAllLabel}" Command="{Binding UpdateAllCommand}" IsEnabled="{Binding HasSubscriptions}"/></WrapPanel>
+      <StackPanel HorizontalAlignment="Center" Margin="0,48,0,24" Visibility="{Binding NeedsSubscription, Converter={StaticResource BooleanVisibility}}">
+       <TextBlock Text="&#xE8D4;" FontFamily="Segoe MDL2 Assets" FontSize="40" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center"/>
+       <TextBlock Text="{DynamicResource NoSubscriptionsYet}" Style="{StaticResource LocalizedText}" FontSize="22" Margin="0,12" TextAlignment="Center"/>
+       <TextBlock Text="{DynamicResource SubscriptionEmptyHint}" Style="{StaticResource SecondaryText}" TextAlignment="Center"/>
+       <Button Content="{DynamicResource AddSubscription}" Click="OpenSubscription" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Center" Margin="0,16" Style="{StaticResource ShaghadPrimaryButton}"/>
+      </StackPanel>
+      <ListBox ItemsSource="{Binding SubscriptionRows}" SelectedItem="{Binding SelectedSubscriptionRow}" ItemContainerStyle="{StaticResource SubscriptionManagerRow}" MaxHeight="280" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}" BorderBrush="{DynamicResource BorderBrush}">
+       <ListBox.Style><Style TargetType="ListBox"><Style.Triggers><DataTrigger Binding="{Binding NeedsSubscription}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></ListBox.Style><ListBox.ItemTemplate><DataTemplate><StackPanel Margin="10"><TextBlock Text="{Binding Name}" Style="{StaticResource LocalizedText}" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding Summary}" Style="{StaticResource LocalizedText}" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,6"/><TextBlock Text="{Binding UpdateDisplay}" Style="{StaticResource LocalizedText}" Foreground="{DynamicResource SecondaryTextBrush}"/><WrapPanel IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=Window}}"><Button Content="{DynamicResource UpdateSubscription}" Command="{Binding UpdateCommand}"/><Button Content="{DynamicResource EditLabel}" Command="{Binding EditCommand}"/><Button Content="{DynamicResource Remove}" Command="{Binding RemoveCommand}"/></WrapPanel></StackPanel></DataTemplate></ListBox.ItemTemplate>
       </ListBox>
-      <WrapPanel Margin="0,14,0,0" IsEnabled="{Binding CanEdit}"><Button Content="{DynamicResource EditLabel}" Click="EditSubscription"/><Button Content="{DynamicResource UpdateSubscription}" Command="{Binding UpdateSubscriptionCommand}"/><Button Content="{DynamicResource Remove}" Command="{Binding RemoveSubscriptionCommand}"/></WrapPanel>
+
      </StackPanel>
      <StackPanel>
       <StackPanel.Style><Style TargetType="StackPanel" BasedOn="{StaticResource Page}"><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Routing"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
@@ -225,5 +225,9 @@
     </Grid>
    </ScrollViewer><ContentControl x:Name="ServersPageHost" Content="{Binding}" ContentTemplate="{StaticResource ServersPageTemplate}"><ContentControl.Style><Style TargetType="ContentControl"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding CurrentPage}" Value="Servers"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></ContentControl.Style></ContentControl></Grid>
   </DockPanel>
+  <Border IsEnabled="{Binding IsEnabled, ElementName=ContentHost}" Panel.ZIndex="10" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="360" Margin="20" Padding="16" CornerRadius="12" Background="{DynamicResource SurfaceBrush}" BorderBrush="{Binding NoticeBrush}" BorderThickness="1" AutomationProperties.LiveSetting="Polite">
+   <Border.Style><Style TargetType="Border"><Style.Triggers><DataTrigger Binding="{Binding Notice}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Border.Style>
+   <StackPanel><TextBlock Text="{Binding NoticeTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding NoticeSummary}" TextWrapping="Wrap" Margin="0,6,0,0"/><WrapPanel Margin="0,8,0,0"><Button Content="{DynamicResource ViewDetails}" Click="ShowNotificationDetails"/><Button Content="{DynamicResource DismissLabel}" Click="DismissNotification"/></WrapPanel></StackPanel>
+  </Border>
  </Grid>
 </Window>

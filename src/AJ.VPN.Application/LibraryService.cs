@@ -86,14 +86,14 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100) throw new InvalidDataException("Enter a subscription name of up to 100 characters.");
         ValidateSubscriptionUrl(url);
-        return MutateAsync(l => l.Subscriptions.Count >= 100 ? throw new InvalidDataException("The subscription list is full.") :
+        return MutateAsync(l => l.Subscriptions.Any(s => s.Url == url.Trim()) ? throw new InvalidDataException("This subscription already exists.") : l.Subscriptions.Count >= 100 ? throw new InvalidDataException("The subscription list is full.") :
             l with { Subscriptions = [..l.Subscriptions, new(Guid.NewGuid().ToString("N"), name.Trim(), url.Trim())] }, token);
     }
     public Task EditSubscriptionAsync(string id, string name, string url, CancellationToken token = default)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length > 100) throw new InvalidDataException("Invalid subscription name.");
         ValidateSubscriptionUrl(url);
-        return MutateAsync(l => l.Subscriptions.Any(s => s.Id == id)
+        return MutateAsync(l => l.Subscriptions.Any(s => s.Id != id && s.Url == url.Trim()) ? throw new InvalidDataException("This subscription already exists.") : l.Subscriptions.Any(s => s.Id == id)
             ? l with { Subscriptions = l.Subscriptions.Select(s => s.Id == id ? s with { Name = name.Trim(), Url = url.Trim(), UpdatedAt = s.Url == url.Trim() ? s.UpdatedAt : null, RemainingBytes = s.Url == url.Trim() ? s.RemainingBytes : null, ExpiresAt = s.Url == url.Trim() ? s.ExpiresAt : null } : s).ToList() }
             : throw new InvalidDataException("Select a subscription."), token);
     }
@@ -128,7 +128,7 @@ public sealed class LibraryService(ILibraryStore store, IProfileValidator valida
     }, token);
     public static Uri ValidateSubscriptionUrl(string url)
     {
-        if (url.Length > 8192 || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https" || uri.UserInfo.Length != 0 || uri.Fragment.Length != 0)
+        if (url.Length > 8192 || url.Any(char.IsWhiteSpace) || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https" || uri.UserInfo.Length != 0 || uri.Fragment.Length != 0)
             throw new InvalidDataException("Subscriptions require an HTTPS URL without embedded user credentials or a fragment.");
         return uri;
     }

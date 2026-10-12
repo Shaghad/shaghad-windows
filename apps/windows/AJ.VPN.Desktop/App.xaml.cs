@@ -35,7 +35,7 @@ public partial class App : System.Windows.Application
         { Shutdown(OwnedCoreProcess.SignalConsoleGroup(pid) ? 0 : 1); return; }
         if (e.Args.Length == 2 && e.Args[0] == "--core-self-test")
         { try { await CoreSelfTest.RunAsync(Path.GetFullPath(e.Args[1])); Shutdown(0); } catch { Shutdown(1); } return; }
-        var smoke = e.Args.Length == 2 && (e.Args[0] == "--smoke-test" || e.Args[0] == "--premium-live-test" || e.Args[0] == "--auto-selection-self-test")
+        var smoke = e.Args.Length == 2 && (e.Args[0] == "--smoke-test" || e.Args[0] == "--premium-live-test" || e.Args[0] == "--auto-selection-self-test" || e.Args[0] == "--ux-workflow-test" || e.Args[0] == "--ux-preview")
             || e.Args.Length == 3 && e.Args[0] == "--authorized-auto-test";
         try { await InitializeAsync(e, smoke); }
         catch (Exception ex)
@@ -88,9 +88,11 @@ public partial class App : System.Windows.Application
         vm.AppearanceChanged += (_, settings) => ApplyAppearance(settings);
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         MainWindow = services.GetRequiredService<MainWindow>();
+        if (smoke && e.Args[0] == "--ux-preview") { MainWindow.Show(); return; }
         if (smoke)
         {
-            if (e.Args[0] == "--authorized-auto-test") await AuthorizedAutoSelectionTest.RunAsync(MainWindow, vm, services.GetRequiredService<LocalProxyBackend>(), Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2]), ApplyAppearance);
+            if (e.Args[0] == "--ux-workflow-test") await UxWorkflowValidation.RunAsync((MainWindow)MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
+            else if (e.Args[0] == "--authorized-auto-test") await AuthorizedAutoSelectionTest.RunAsync(MainWindow, vm, services.GetRequiredService<LocalProxyBackend>(), Path.GetFullPath(e.Args[1]), Path.GetFullPath(e.Args[2]), ApplyAppearance);
             else if (e.Args[0] == "--auto-selection-self-test") await AutoSelectionSelfTest.RunAsync(MainWindow, vm, services.GetRequiredService<LocalProxyBackend>(), Path.GetFullPath(e.Args[1]), ApplyAppearance);
             else if (e.Args[0] == "--premium-live-test") await PremiumLiveTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);
             else await SmokeTest.RunAsync(MainWindow, vm, Path.GetFullPath(e.Args[1]), ApplyAppearance);

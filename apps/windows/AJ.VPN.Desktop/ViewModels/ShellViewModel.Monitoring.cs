@@ -29,7 +29,7 @@ public sealed partial class ShellViewModel
     public string TotalDownloaded => traffic == null ? Resource("UnavailableMetric") : FormatBytes(traffic.Downloaded);
     public string TotalUploaded => traffic == null ? Resource("UnavailableMetric") : FormatBytes(traffic.Uploaded);
     private static string FormatBytes(double bytes) => bytes >= 1024 * 1024 ? $"{bytes / (1024 * 1024):0.0} MB" : bytes >= 1024 ? $"{bytes / 1024:0.0} KB" : $"{bytes:0} B";
-    private static string FormatRate(double? bytes) => bytes.HasValue ? FormatBytes(bytes.Value) + "/s" : Resource("UnavailableMetric");
+    private static string FormatRate(double? bytes) => bytes.HasValue ? FormatBytes(bytes.Value) + "/s" : "—";
     private void RaiseMonitoring()
     {
         foreach (var name in new[] { nameof(Quality), nameof(ActiveFlag), nameof(FastestServers), nameof(DownloadSpeed), nameof(UploadSpeed), nameof(TotalDownloaded), nameof(TotalUploaded) }) Raise(name);

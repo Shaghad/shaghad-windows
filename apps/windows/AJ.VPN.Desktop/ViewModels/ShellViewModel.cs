@@ -48,27 +48,21 @@ public sealed partial class ShellViewModel : ObservableObject
         DiagnosticsCommand = new AsyncCommand(CheckAsync, HandleFailure);
         ValidateCommand = new AsyncCommand(ValidateAsync, HandleFailure);
         ExitCommand = new RelayCommand(_ => System.Windows.Application.Current.MainWindow?.Close());
-        ClipboardCommand = new AsyncCommand(async () => { ProfileInput = System.Windows.Clipboard.GetText(); await ValidateAsync(); }, HandleFailure);
+        ClipboardCommand = new RelayCommand(_ => ClipboardImportRequested?.Invoke(this, EventArgs.Empty));
         ActivateCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) { await library.SelectAsync(SelectedServer.Server.Id); await library.SetSelectionModeAsync(SelectionMode.Manual); } RefreshLibrary(); }, HandleFailure);
         RemoveServerCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedServer != null) await library.RemoveProfileAsync(SelectedServer.Server.Id); RefreshLibrary(); }, HandleFailure);
         ConnectCommand = new AsyncCommand(async () => { connectOperation = ConnectAsync(); await connectOperation; }, HandleFailure);
         DisconnectCommand = new AsyncCommand(async () => { manualDisconnect = true; failoverPolicy.Reset(); await DisconnectAsync(); }, HandleFailure);
         ProbeCommand = new AsyncCommand(ProbeAsync, HandleFailure);
         AddSubscriptionCommand = new AsyncCommand(async () => { EnsureIdle(); if (EditingSubscriptionId != null) await library.EditSubscriptionAsync(EditingSubscriptionId, SubscriptionName, SubscriptionUrl); else await library.AddSubscriptionAsync(SubscriptionName, SubscriptionUrl); EditingSubscriptionId = null; SubscriptionUrl = ""; RefreshLibrary(); Notice = "Subscription saved with Windows user encryption. Update explicitly to import its servers."; }, HandleFailure);
-        UpdateSubscriptionCommand = new AsyncCommand(async () =>
-        {
-            EnsureIdle(); if (SelectedSubscription == null) return;
-            Busy = true; networkCancellation = new();
-            try { await library.UpdateSubscriptionAsync(SelectedSubscription.Id, networkCancellation.Token); RefreshLibrary(); Notice = "Subscription updated. Imported profiles passed validation."; }
-            finally { Busy = false; networkCancellation.Dispose(); networkCancellation = null; }
-        }, HandleFailure);
+        UpdateSubscriptionCommand = new AsyncCommand(async () => { if (SelectedSubscription != null) await UpdateSubscriptionByIdAsync(SelectedSubscription.Id); }, HandleFailure);
         RemoveSubscriptionCommand = new AsyncCommand(async () => { EnsureIdle(); if (SelectedSubscription != null) await library.RemoveSubscriptionAsync(SelectedSubscription.Id); RefreshLibrary(); }, HandleFailure);
         RefreshCoresCommand = new AsyncCommand(RefreshCoresAsync, HandleFailure);
         ApplyProxyCommand = new AsyncCommand(ApplyProxyAsync, HandleFailure);
         RestoreProxyCommand = new AsyncCommand(async () =>
         {
             var approved = proxy.IsApplied || Confirm("Restore the previous Windows proxy settings recorded by SHAGHAD? Any changes made outside SHAGHAD will be preserved.");
-            if (approved) Notice = await proxy.RestoreAsync(true); Raise(nameof(ConnectionMode));
+            if (approved) Notice = await proxy.RestoreAsync(true); Raise(nameof(ConnectionMode)); Raise(nameof(TrafficRoutingSummary));
         }, HandleFailure);
         connection.StateChanged += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(RefreshState);
         backend.UnexpectedExit += (_, _) => System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
@@ -85,13 +79,14 @@ public sealed partial class ShellViewModel : ObservableObject
     public string Verification => Resource(InternetVerified ? "InternetVerified" : "InternetUnverified");
     private Server? DisplayServer => State is ConnectionState.Connected or ConnectionState.Connecting ? connectedServer :
         library.Current.SelectionMode == SelectionMode.Auto ? library.Current.Profiles.Find(p => p.Server.Id == ResolvedServerId)?.Server : SelectedServer?.Server ?? library.Active?.Server;
-    public string ActiveServer => (IsAuto ? Resource("AutoShort") + " · " : "") + (DisplayServer?.Name ?? Resource("NoServer"));
+    public string ActiveServer => (IsAuto ? Resource("AutoShort") + " · " : "") + (DisplayServer is { } active ? SafeServerName(active.Name) : Resource("NoServer"));
     public bool HasActiveProfile => IsAuto ? Servers.Count > 0 : library.Active != null;
+    private static string SafeServerName(string name) => name.Contains("://", StringComparison.Ordinal) ? Resource("ImportedServerLabel") : name;
     private static string Resource(string key) => System.Windows.Application.Current.TryFindResource(key) as string ?? key;
     public void RefreshLocalizedText()
     {
-        RaiseMonitoring();
-        Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification)); Raise(nameof(ConsumerStatus)); Raise(nameof(Location)); Raise(nameof(ConnectionMode)); Raise(nameof(NeedsServer));
+        RaiseMonitoring(); Raise(nameof(PublicIpDisplay)); Raise(nameof(IpVerificationDisplay)); Raise(nameof(NoticeTitle));
+        Raise(nameof(ActiveServer)); Raise(nameof(Endpoint)); Raise(nameof(Verification)); Raise(nameof(ConsumerStatus)); Raise(nameof(Location)); Raise(nameof(ConnectionMode)); Raise(nameof(TrafficRoutingSummary)); Raise(nameof(NeedsServer));
         if (ServerView != null) RefreshPremiumLibrary();
         RaiseAuto(); Raise(nameof(TestProgressText));
     }
@@ -124,7 +119,7 @@ public sealed partial class ShellViewModel : ObservableObject
         .OfType<System.Reflection.AssemblyInformationalVersionAttribute>().FirstOrDefault()?.InformationalVersion.Split('+')[0] ?? "Unavailable";
     public string GitHubRepository => "https://github.com/Shaghad/shaghad-windows";
     public string CurrentPage { get => currentPage; set => Set(ref currentPage, value); }
-    public string Notice { get => notice; private set => Set(ref notice, value); }
+    public string Notice { get => notice; private set { noticeIsError = false; Set(ref notice, value); Raise(nameof(NoticeTitle)); Raise(nameof(NoticeBrush)); Raise(nameof(NoticeSummary)); } }
     public string ProfileInput { get => profileInput; set => Set(ref profileInput, value); }
     public string ProfileResult { get => profileResult; private set => Set(ref profileResult, value); }
     public ThemePreference SelectedTheme { get => selectedTheme; set => Set(ref selectedTheme, value); }
@@ -149,6 +144,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public ICommand RefreshCoresCommand { get; }
     public ICommand ApplyProxyCommand { get; }
     public ICommand RestoreProxyCommand { get; }
+    public event EventHandler? ClipboardImportRequested;
     public event EventHandler<ApplicationSettings>? AppearanceChanged;
     public async Task InitializeAsync()
     {
@@ -191,7 +187,7 @@ public sealed partial class ShellViewModel : ObservableObject
         var previousCount = library.Current.Profiles.Count;
         await library.ImportAsync(input);
         RefreshLibrary();
-        ProfileResult = $"{library.Current.Profiles.Count - previousCount} {Resource("ImportedCount")}";
+        ProfileResult = library.Current.Profiles.Count == previousCount ? Resource("AlreadyImported") : $"{library.Current.Profiles.Count - previousCount} {Resource("ImportedCount")}"; Notice = ProfileResult;
         logger.LogInformation(new EventId(401), "Profile import completed");
     }
     private void EnsureIdle() { if (!CanEdit) throw new InvalidOperationException("Disconnect before changing the server library or core."); }
@@ -212,7 +208,7 @@ public sealed partial class ShellViewModel : ObservableObject
             ipCancellation?.Cancel(); PublicIp = "—"; Latency = "—"; connectedAt = null;
             connectedServer = null;
         }
-        foreach (var name in new[] { nameof(State), nameof(InternetVerified), nameof(Endpoint), nameof(Verification), nameof(CanEdit), nameof(ConsumerStatus), nameof(CanProbe), nameof(ConnectionMode), nameof(Duration) }) Raise(name);
+        foreach (var name in new[] { nameof(State), nameof(InternetVerified), nameof(Endpoint), nameof(Verification), nameof(CanEdit), nameof(ConsumerStatus), nameof(CanProbe), nameof(ConnectionMode), nameof(TrafficRoutingSummary), nameof(Duration) }) Raise(name);
         Raise(nameof(ActiveServer)); Raise(nameof(Protocol)); Raise(nameof(Location)); RefreshRowSelection();
     }
     private async Task RefreshCoresAsync()
@@ -290,9 +286,9 @@ public sealed partial class ShellViewModel : ObservableObject
         await proxy.ApplyAsync(port, true);
         // Recheck after asynchronous journal persistence in case the core exited during approval/apply.
         if (backend.Port != port || State != ConnectionState.Connected) Notice = await proxy.RestoreAsync();
-        else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings."; Raise(nameof(ConnectionMode));
+        else Notice = "Windows System Proxy applied with your approval. Disconnect or Restore will recover the previous settings."; Raise(nameof(ConnectionMode)); Raise(nameof(TrafficRoutingSummary));
     }
-    private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD · Windows System Proxy", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
+    private static bool Confirm(string message) => System.Windows.MessageBox.Show(System.Windows.Application.Current.MainWindow, message, "SHAGHAD", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question, System.Windows.MessageBoxResult.No) == System.Windows.MessageBoxResult.Yes;
     public async Task ShutdownAsync() { manualDisconnect = true; durationTimer?.Stop(); monitoringCancellation.Cancel(); if (monitoringOperation != null) { try { await monitoringOperation; } catch { } } testCancellation?.Cancel(); if (testOperation != null) { try { await testOperation; } catch { } } await DisconnectAsync(); monitoringCancellation.Dispose(); }
     private void HandleFailure(Exception _)
     {
@@ -306,6 +302,6 @@ public sealed partial class ShellViewModel : ObservableObject
             System.IO.InvalidDataException => "Configuration rejected. Check the share-link format, supported transport and selected core; subscription updates require a supported HTTPS share-link list. Existing data was preserved.",
             _ => "Operation failed. Check profile validity, selected core and local Diagnostics. Existing saved data was preserved."
         };
-        logger.LogError(new EventId(500), "Operation failed");
+        noticeIsError = true; Raise(nameof(NoticeTitle)); Raise(nameof(NoticeBrush)); logger.LogError(new EventId(500), "Operation failed");
     }
 }
